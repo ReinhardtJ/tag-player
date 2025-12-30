@@ -57,7 +57,7 @@
           <div>
             <button
                 onclick={() => play(song)}
-                class="bg-purple-400 rounded-2xl p-1 m-1"
+                class="bg-purple-400 rounded-lg p-1 my-1 w-full cursor-pointer"
             >
               {song.name}
             </button>
