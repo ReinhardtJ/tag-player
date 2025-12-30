@@ -1,40 +1,83 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core'
+  import { onMount } from 'svelte'
 
-  let musicFile = $state('')
   let isLoaded = $state(false)
   let isPlaying = $state(false)
   let buttonText = $state('Play')
   let error = $state('')
-  async function play() {
+  let songList = $state([] as MusicFile[])
+  let volume = $state(50)
+
+  interface MusicFile {
+    path: string
+    name: string
+  }
+
+  onMount(async () => {
+    songList = await invoke('get_music_library')
+  })
+
+  async function onVolumeChange() {
+    await invoke('volume_change', { volume: volume / 100 })
+  }
+
+  async function play(song: MusicFile) {
     try {
-      if (!isLoaded) {
-        const result = await invoke('load_and_play', { path: musicFile })
-        if (result !== null) {
-          error = String(result)
-          return
-        }
-        buttonText = 'Pause'
-        isLoaded = true
-        isPlaying = true
-      } else {
-        const result = await invoke('toggle_playback')
+      const result = await invoke('load_and_play', { path: song.path })
+      if (result !== null) {
         error = String(result)
-        isPlaying = !isPlaying
-        buttonText = isPlaying ? 'Pause' : 'Play'
+        return
       }
+      buttonText = 'Pause'
+      isLoaded = true
+      isPlaying = true
     } catch (e) {
       error = String(e)
     }
 
   }
+
+  async function togglePlayback() {
+    const result = await invoke('toggle_playback')
+    if (result !== null) {
+      error = String(result)
+      return
+    }
+    isPlaying = !isPlaying
+    buttonText = isPlaying ? 'Pause' : 'Play'
+  }
+
 </script>
 
-<main class="container">
-  <input placeholder="Enter a music file..." bind:value={musicFile}/>
-  <br>
-  <button onclick={play}>{ buttonText }</button>
-  <p>Error: { error }</p>
+<main>
+    <div class="grid grid-cols-2 grid_rows[1fr_auto] h-screen gap-2">
+      <div class="h-full overflow-auto ml-2 my-2 p-2 bg-gray-300 rounded-lg">
+        {#each songList as song}
+          <div>
+            <button
+                onclick={() => play(song)}
+                class="bg-purple-400 rounded-2xl p-1 m-1"
+            >
+              {song.name}
+            </button>
+          </div>
+        {/each}
+      </div>
+      <div class="h-full bg-gray-300 rounded-lg my-2 p-2 mr-2">
+        Taaaags
+      </div>
+      <div class="col-span-2 p-2 bg-gray-300 rounded-lg m-2 ">
+        <input type="range" min="0" max="100" bind:value={volume} oninput={onVolumeChange}>
+        <button
+            onclick={togglePlayback}
+            class="bg-purple-400 rounded-2xl p-1 m-1"
+        >
+          { buttonText }
+        </button>
+        <p>Error: { error }</p>
+      </div>
+    </div>
 </main>
 
 <style>

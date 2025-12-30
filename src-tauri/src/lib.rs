@@ -1,21 +1,12 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod audio;
+mod music_library;
 
-use rodio::Decoder;
-use std::fs::File;
-use std::io::BufReader;
-use std::sync::mpsc::Receiver;
-use std::sync::mpsc::{channel, Sender};
+use std::sync::mpsc::channel;
 use std::thread;
 use tauri::State;
-
-enum AudioCommand {
-    LoadAndPlay(String),
-    TogglePlayback,
-}
-
-struct AudioPlayer {
-    sender: Sender<AudioCommand>,
-}
+use audio::{AudioCommand, AudioPlayer};
+use crate::music_library::{gather_music_library, MusicFile};
 
 #[tauri::command]
 fn load_and_play(path: String, state: State<AudioPlayer>) -> Result<(), String> {
@@ -35,58 +26,34 @@ fn toggle_playback(state: State<AudioPlayer>) -> Result<(), String> {
     Ok(())
 }
 
-fn audio_thread(receiver: Receiver<AudioCommand>) {
-    let stream_handle =
-        rodio::OutputStreamBuilder::open_default_stream().expect("Failed to create audio stream");
+#[tauri::command]
+fn get_music_library() -> Result<Vec<MusicFile>, ()> {
+    Ok(gather_music_library("/Users/jonas/Repositories/Navidrome/music_wip".to_string()))
+}
 
-    let sink = rodio::Sink::connect_new(&stream_handle.mixer());
-
-    loop {
-        match receiver.recv() {
-            Ok(AudioCommand::LoadAndPlay(path)) => {
-                sink.stop();
-                println!("Attempting to open file: {}", path);
-                match File::open(&path) {
-                    Ok(file) => {
-                        let buf_reader = BufReader::new(file);
-                        match Decoder::new(buf_reader) {
-                            Ok(source) => {
-                                sink.append(source);
-                                sink.play();
-                                println!("Playing: {}", path)
-                            }
-                            Err(e) => eprintln!("Failed to decode audio: {}", e),
-                        }
-                    }
-                    Err(e) => eprintln!("Failed to open file: {}", e),
-                }
-            }
-            Ok(AudioCommand::TogglePlayback) => {
-                if sink.is_paused() {
-                    sink.play();
-                    println!("Resumed playback")
-                } else {
-                    sink.pause();
-                    println!("Paused playback")
-                }
-            }
-            Err(_) => {
-                println!("Audio thread shutting down");
-                break;
-            }
-        }
-    }
+#[tauri::command]
+fn volume_change(volume: f32, state: State<AudioPlayer>) -> Result<(), String> {
+    state
+        .sender
+        .send(AudioCommand::VolumeChange(volume))
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let (sender, receiver) = channel();
-    thread::spawn(move || audio_thread(receiver));
+    thread::spawn(move || audio::audio_thread(receiver));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(AudioPlayer { sender })
-        .invoke_handler(tauri::generate_handler![load_and_play, toggle_playback])
+        .invoke_handler(tauri::generate_handler![
+            load_and_play,
+            toggle_playback,
+            get_music_library,
+            volume_change
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
