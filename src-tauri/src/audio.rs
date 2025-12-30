@@ -1,12 +1,12 @@
+use rodio::{Decoder, Sink};
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::mpsc::{Receiver, Sender};
-use rodio::Decoder;
 
 pub enum AudioCommand {
     LoadAndPlay(String),
     TogglePlayback,
-    VolumeChange(f32)
+    VolumeChange(f32),
 }
 
 pub struct AudioPlayer {
@@ -22,39 +22,45 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>) {
     loop {
         match receiver.recv() {
             Ok(AudioCommand::LoadAndPlay(path)) => {
-                sink.stop();
-                println!("Attempting to open file: {}", path);
-                match File::open(&path) {
-                    Ok(file) => {
-                        let buf_reader = BufReader::new(file);
-                        match Decoder::new(buf_reader) {
-                            Ok(source) => {
-                                sink.append(source);
-                                sink.play();
-                                println!("Playing: {}", path)
-                            }
-                            Err(e) => eprintln!("Failed to decode audio: {}", e),
-                        }
-                    }
-                    Err(e) => eprintln!("Failed to open file: {}", e),
-                }
+                load_and_play(&sink, &path);
             }
             Ok(AudioCommand::TogglePlayback) => {
-                if sink.is_paused() {
-                    sink.play();
-                    println!("Resumed playback")
-                } else {
-                    sink.pause();
-                    println!("Paused playback")
-                }
+                toggle_playback(&sink);
             }
-            Ok(AudioCommand::VolumeChange(volume)) => {
-                sink.set_volume(volume)
-            }
+            Ok(AudioCommand::VolumeChange(volume)) => sink.set_volume(volume),
             Err(_) => {
                 println!("Audio thread shutting down");
                 break;
             }
         }
+    }
+}
+
+fn toggle_playback(sink: &Sink) {
+    if sink.is_paused() {
+        sink.play();
+        println!("Resumed playback")
+    } else {
+        sink.pause();
+        println!("Paused playback")
+    }
+}
+
+fn load_and_play(sink: &Sink, path: &String) {
+    sink.stop();
+    println!("Attempting to open file: {}", path);
+    match File::open(&path) {
+        Ok(file) => {
+            let buf_reader = BufReader::new(file);
+            match Decoder::new(buf_reader) {
+                Ok(source) => {
+                    sink.append(source);
+                    sink.play();
+                    println!("Playing: {}", path)
+                }
+                Err(e) => eprintln!("Failed to decode audio: {}", e),
+            }
+        }
+        Err(e) => eprintln!("Failed to open file: {}", e),
     }
 }
