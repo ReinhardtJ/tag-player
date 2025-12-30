@@ -2,11 +2,11 @@
 mod audio;
 mod music_library;
 
+use crate::music_library::{gather_music_library, MusicFile};
+use audio::{AudioCommand, AudioPlayer};
 use std::sync::mpsc::channel;
 use std::thread;
 use tauri::State;
-use audio::{AudioCommand, AudioPlayer};
-use crate::music_library::{gather_music_library, MusicFile};
 
 #[tauri::command]
 fn load_and_play(path: String, state: State<AudioPlayer>) -> Result<(), String> {
@@ -27,8 +27,8 @@ fn toggle_playback(state: State<AudioPlayer>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_music_library() -> Result<Vec<MusicFile>, ()> {
-    Ok(gather_music_library("/Users/jonas/Repositories/Navidrome/music_wip".to_string()))
+fn get_music_library(path: String) -> Result<Vec<MusicFile>, ()> {
+    Ok(gather_music_library(path))
 }
 
 #[tauri::command]
@@ -46,6 +46,7 @@ pub fn run() {
     thread::spawn(move || audio::audio_thread(receiver));
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(AudioPlayer { sender })
         .invoke_handler(tauri::generate_handler![
