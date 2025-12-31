@@ -5,12 +5,14 @@ interface MusicFile {
 
 class PlayerState {
   songList = $state<MusicFile[]>([])
-  isPlaying = $state(false)
+  isPlaying = $derived(false)
   isLoaded = $state(false)
+  currentSong = $state<MusicFile | null>(null)
 
   reset() {
     this.isPlaying = false
     this.isLoaded = false
+    this.currentSong = null
   }
 }
 

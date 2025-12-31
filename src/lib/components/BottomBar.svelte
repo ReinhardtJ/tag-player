@@ -20,7 +20,7 @@
   }
 </script>
 
-<div class="p-2 bg-gray-300 dark:bg-gray-800 rounded-lg flex items-center justify-between">
+<div class="p-2 bg-gray-300 dark:bg-neutral-800/80 rounded-lg flex items-center justify-between">
   <!-- Left: Error message -->
   <div class="flex-1">
     {#if errorState.error}
@@ -32,12 +32,12 @@
   <div class="flex-1 flex justify-center">
     <button
       onclick={togglePlayback}
-      class="bg-purple-400 dark:bg-purple-600 rounded-full p-3 hover:bg-purple-500"
+      class="bg-linear-to-br from-purple-700 to-violet-700 rounded-full p-3 hover:from-purple-600 hover:to-violet-600"
     >
       {#if playerState.isPlaying}
-        <Pause size={24} />
+        <Pause size={18} fill="currentColor" />
       {:else}
-        <Play size={24} />
+        <Play size={18} fill="currentColor" />
       {/if}
     </button>
   </div>

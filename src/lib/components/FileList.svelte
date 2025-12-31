@@ -12,6 +12,7 @@
       }
       playerState.isLoaded = true
       playerState.isPlaying = true
+      playerState.currentSong = song
       errorState.clearError()
     } catch (e) {
       errorState.setError(String(e))
@@ -19,11 +20,11 @@
   }
 </script>
 
-<div class="h-full overflow-auto p-2 bg-gray-300 dark:bg-gray-800 rounded-lg">
+<div class="h-full overflow-auto p-2 bg-gray-300/30 dark:bg-neutral-800/80 rounded-lg">
   {#each playerState.songList as song}
     <button
       onclick={() => play(song)}
-      class="bg-purple-400 dark:bg-purple-600 hover:bg-purple-500 rounded-lg p-2 my-1 w-full cursor-pointer text-left"
+      class={`hover:bg-violet-500/30 rounded-lg p-2 my-1 w-full cursor-pointer text-left ${song === playerState.currentSong ? 'dark:bg-violet-700' : ''}`}
     >
       {song.name}
     </button>

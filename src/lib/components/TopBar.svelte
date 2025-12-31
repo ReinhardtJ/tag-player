@@ -38,12 +38,12 @@
   }
 </script>
 
-<div class="flex justify-between items-center">
-  <button onclick={selectFolder} class="flex items-center gap-2 bg-purple-400 dark:bg-purple-600 rounded-lg p-2">
+<div class="flex justify-between items-center dark:bg-neutral-800/80 rounded-lg p-2">
+  <button onclick={selectFolder} class="flex items-center gap-2 bg-gradient-to-br from-purple-700 to-violet-700 rounded-lg p-2 hover:from-purple-600 hover:to-violet-600">
     <FolderOpen size={20} />
     <span>Open Folder</span>
   </button>
-  <button onclick={toggleDarkMode} class="p-2 rounded-lg bg-gray-300 dark:bg-gray-700">
+  <button onclick={toggleDarkMode} class="p-2 rounded-lg bg-gray-300 dark:bg-neutral-700">
     {#if isDarkMode}
       <Sun size={20} />
     {:else}
