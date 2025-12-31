@@ -1,8 +1,9 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod audio;
-mod music_library;
+pub mod music_library;
 
-use crate::music_library::{gather_music_library, MusicFile};
+use std::path::Path;
+use crate::music_library::{gather_music_library, Library};
 use audio::{AudioCommand, AudioPlayer};
 use std::sync::mpsc::channel;
 use std::thread;
@@ -27,8 +28,8 @@ fn toggle_playback(state: State<AudioPlayer>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_music_library(path: String) -> Result<Vec<MusicFile>, ()> {
-    Ok(gather_music_library(path))
+fn get_music_library(path: String) -> Library {
+    gather_music_library(Path::new(&path))
 }
 
 #[tauri::command]

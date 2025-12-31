@@ -1,9 +1,9 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core'
-  import { playerState, type MusicFile } from '$lib/stores/player.svelte'
+  import { playerState, type Song } from '$lib/stores/player.svelte'
   import { errorState } from '$lib/stores/error.svelte'
 
-  async function play(song: MusicFile) {
+  async function play(song: Song) {
     try {
       const result = await invoke('load_and_play', { path: song.path })
       if (result !== null) {

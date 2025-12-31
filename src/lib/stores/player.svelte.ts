@@ -1,13 +1,13 @@
-interface MusicFile {
+interface Song {
   path: string
   name: string
 }
 
 class PlayerState {
-  songList = $state<MusicFile[]>([])
+  songList = $state<Song[]>([])
   isPlaying = $derived(false)
   isLoaded = $state(false)
-  currentSong = $state<MusicFile | null>(null)
+  currentSong = $state<Song | null>(null)
 
   reset() {
     this.isPlaying = false
@@ -17,4 +17,4 @@ class PlayerState {
 }
 
 export const playerState = new PlayerState()
-export type { MusicFile }
+export type { Song }
