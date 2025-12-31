@@ -1,13 +1,7 @@
+import { playerState } from '$lib/stores/player.svelte'
+
 class ErrorState {
-  error = $state('')
-
-  setError(message: string) {
-    this.error = message
-  }
-
-  clearError() {
-    this.error = ''
-  }
+  error = $derived(playerState.library.errors.join(',\n'))
 }
 
 export const errorState = new ErrorState()

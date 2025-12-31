@@ -34,7 +34,7 @@
 
   async function selectFolder() {
     const selectedFolder = await open({ directory: true })
-    playerState.songList = await invoke('get_music_library', { path: selectedFolder })
+    playerState.library = await invoke('get_music_library', { path: selectedFolder })
   }
 </script>
 

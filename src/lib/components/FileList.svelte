@@ -21,7 +21,7 @@
 </script>
 
 <div class="h-full overflow-auto p-2 bg-gray-300/30 dark:bg-neutral-800/80 rounded-lg">
-  {#each playerState.songList as song}
+  {#each playerState.library.songs as song}
     <button
       onclick={() => play(song)}
       class={`hover:bg-violet-500/30 rounded-lg p-2 my-1 w-full cursor-pointer text-left ${song === playerState.currentSong ? 'dark:bg-violet-700' : ''}`}
