@@ -21,16 +21,41 @@ interface Library {
 }
 
 class PlayerState {
-  library = $state<Library>({ songs: [], errors: []})
+  library = $state<Library>({ songs: [], errors: [] })
   isPlaying = $derived(false)
   isLoaded = $state(false)
   currentSong = $state<Song | null>(null)
+  searchQuery = $state('')
+
+  filteredSongs = $derived(
+    this.searchQuery.trim() === ''
+      ? this.library.songs
+      : this.library.songs.filter(song => matchesSearch(song, this.searchQuery))
+  )
 
   reset() {
     this.isPlaying = false
     this.isLoaded = false
     this.currentSong = null
   }
+}
+
+function matchesSearch(song: Song, query: string): boolean {
+  const searchTerm = query.toLowerCase().trim()
+
+  const searchableFields = [
+    song.name,
+    song.tags.title,
+    song.tags.artist,
+    song.tags.album_artist,
+    song.tags.album,
+    song.tags.genre,
+    song.tags.mood,
+  ]
+
+  return searchableFields.some(
+    field => field?.toLowerCase().includes(searchTerm)
+  )
 }
 
 export const playerState = new PlayerState()

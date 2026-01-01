@@ -1,22 +1,13 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core'
-  import { Play, Pause, Volume2 } from '@lucide/svelte'
-  import { playerState } from '$lib/stores/player.svelte'
+  import { Volume2 } from '@lucide/svelte'
   import { errorState } from '$lib/stores/error.svelte'
+  import PlayButton from './PlayButton.svelte'
 
   let volume = $state(50)
 
   async function onVolumeChange() {
     await invoke('volume_change', { volume: volume / 100 })
-  }
-
-  async function togglePlayback() {
-    const result = await invoke('toggle_playback')
-    if (result !== null) {
-      errorState.setError(String(result))
-      return
-    }
-    playerState.isPlaying = !playerState.isPlaying
   }
 </script>
 
@@ -30,16 +21,7 @@
 
   <!-- Center: Play/Pause button -->
   <div class="flex-1 flex justify-center">
-    <button
-      onclick={togglePlayback}
-      class="bg-linear-to-br from-purple-700 to-violet-700 rounded-full p-3 hover:from-purple-600 hover:to-violet-600"
-    >
-      {#if playerState.isPlaying}
-        <Pause size={18} fill="currentColor" />
-      {:else}
-        <Play size={18} fill="currentColor" />
-      {/if}
-    </button>
+    <PlayButton />
   </div>
 
   <!-- Right: Volume controls -->

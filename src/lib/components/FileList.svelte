@@ -7,21 +7,21 @@
     try {
       const result = await invoke('load_and_play', { path: song.path })
       if (result !== null) {
-        errorState.setError(String(result))
+        errorState.error = String(result)
         return
       }
       playerState.isLoaded = true
       playerState.isPlaying = true
       playerState.currentSong = song
-      errorState.clearError()
+      errorState.error = ""
     } catch (e) {
-      errorState.setError(String(e))
+      errorState.error = String(e)
     }
   }
 </script>
 
 <div class="h-full overflow-auto p-2 bg-gray-300/30 dark:bg-neutral-800/80 rounded-lg">
-  {#each playerState.library.songs as song}
+  {#each playerState.filteredSongs as song}
     <button
       onclick={() => play(song)}
       class={`hover:bg-violet-500/30 rounded-lg p-2 my-1 w-full cursor-pointer text-left ${song === playerState.currentSong ? 'dark:bg-violet-700' : ''}`}
