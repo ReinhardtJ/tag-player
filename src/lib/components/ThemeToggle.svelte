@@ -30,7 +30,9 @@
   }
 </script>
 
-<button onclick={toggleDarkMode} class="p-2 rounded-lg bg-gray-300 dark:bg-neutral-700">
+<button
+    onclick={toggleDarkMode}
+    class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700">
   {#if isDarkMode}
     <Sun size={20} />
   {:else}

@@ -4,7 +4,7 @@
   const tags = $derived(playerState.currentSong?.tags)
 </script>
 
-<div class="h-full bg-gray-300 dark:bg-neutral-800/80 rounded-lg p-2">
+<div class="h-full gradient-border rounded-3xl p-2">
   {#if tags !== undefined }
     <table class="w-full">
       <tbody>

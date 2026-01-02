@@ -3,10 +3,132 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 .dark {
-  color: theme(colors.slate.100);
+    color: theme(colors.slate.100);
 }
 
+.gradient-border {
+    background:
+            linear-gradient(transparent, transparent) padding-box,
+            linear-gradient(45deg, var(--color-purple-500), var(--color-violet-500)) border-box;
+    border: 1px solid transparent;
+}
+
+.dark .gradient-border {
+    background:
+            linear-gradient(var(--color-neutral-800), var(--color-neutral-800)) padding-box,
+            linear-gradient(0deg, var(--color-neutral-800), var(--color-neutral-700)) border-box;
+}
+
+.gradient-blur {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .gradient-blur {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Neomorphic Inset */
+.neo-inset-xs {
+    box-shadow:
+        inset 1px 1px 2px rgba(0, 0, 0, 0.3),
+        inset -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.neo-inset-sm {
+    box-shadow:
+        inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+        inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.neo-inset {
+    box-shadow:
+        inset 4px 4px 8px rgba(0, 0, 0, 0.3),
+        inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.neo-inset-lg {
+    box-shadow:
+        inset 6px 6px 12px rgba(0, 0, 0, 0.3),
+        inset -6px -6px 12px rgba(255, 255, 255, 0.1);
+}
+
+.dark .neo-inset-xs {
+    box-shadow:
+        inset 1px 1px 3px rgba(0, 0, 0, 0.5),
+        inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-inset-sm {
+    box-shadow:
+        inset 2px 2px 6px rgba(0, 0, 0, 0.5),
+        inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-inset {
+    box-shadow:
+        inset 4px 4px 12px rgba(0, 0, 0, 0.5),
+        inset -4px -4px 12px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-inset-lg {
+    box-shadow:
+        inset 6px 6px 16px rgba(0, 0, 0, 0.5),
+        inset -6px -6px 16px rgba(255, 255, 255, 0.05);
+}
+
+/* Neomorphic Raised */
+.neo-raised-xs {
+    box-shadow:
+        2px 2px 4px rgba(0, 0, 0, 0.2),
+        -2px -2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.neo-raised-sm {
+    box-shadow:
+        3px 3px 6px rgba(0, 0, 0, 0.2),
+        -3px -3px 6px rgba(255, 255, 255, 0.1);
+}
+
+.neo-raised {
+    box-shadow:
+        6px 6px 12px rgba(0, 0, 0, 0.2),
+        -6px -6px 12px rgba(255, 255, 255, 0.1);
+}
+
+.neo-raised-lg {
+    box-shadow:
+        10px 10px 20px rgba(0, 0, 0, 0.2),
+        -10px -10px 20px rgba(255, 255, 255, 0.1);
+}
+
+.dark .neo-raised-xs {
+    box-shadow:
+        2px 2px 4px rgba(0, 0, 0, 0.4),
+        -2px -2px 4px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-raised-sm {
+    box-shadow:
+        4px 4px 8px rgba(0, 0, 0, 0.4),
+        -4px -4px 8px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-raised {
+    box-shadow:
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        -8px -8px 16px rgba(255, 255, 255, 0.05);
+}
+
+.dark .neo-raised-lg {
+    box-shadow:
+        12px 12px 24px rgba(0, 0, 0, 0.4),
+        -12px -12px 24px rgba(255, 255, 255, 0.05);
+}

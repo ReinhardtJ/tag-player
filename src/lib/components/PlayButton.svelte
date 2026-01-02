@@ -16,7 +16,7 @@
 
 <button
   onclick={togglePlayback}
-  class="bg-linear-to-br from-purple-700 to-violet-700 rounded-full p-3 hover:from-purple-600 hover:to-violet-600"
+  class="neo-raised bg-linear-to-br from-purple-700 to-violet-700 rounded-full p-3 hover:from-purple-600 hover:to-violet-600"
 >
   {#if playerState.isPlaying}
     <Pause size={18} fill="currentColor" />
