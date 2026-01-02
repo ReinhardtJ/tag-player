@@ -1,13 +1,14 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-mod audio;
 pub mod music_library;
+mod audio;
 
-use std::path::Path;
 use crate::music_library::{gather_music_library, Library};
-use audio::{AudioCommand, AudioPlayer};
+use std::path::Path;
 use std::sync::mpsc::channel;
 use std::thread;
-use tauri::State;
+use tauri::{Manager, State};
+use crate::audio::audio_thread::audio_thread;
+use crate::audio::shared::{AudioCommand, AudioPlayer};
 
 #[tauri::command]
 fn load_and_play(path: String, state: State<AudioPlayer>) -> Result<(), String> {
@@ -41,20 +42,37 @@ fn volume_change(volume: f32, state: State<AudioPlayer>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn seek(position: f64, state: State<AudioPlayer>) -> Result<(), String> {
+    state
+        .sender
+        .send(AudioCommand::Seek(position))
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let (sender, receiver) = channel();
-    thread::spawn(move || audio::audio_thread(receiver));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .manage(AudioPlayer { sender })
+        .setup(|app| {
+            let (sender, receiver) = channel();
+            let app_handle = app.handle().clone();
+
+            // spawn audio thread with app handle for event emission
+            thread::spawn(move || audio_thread(receiver, app_handle));
+
+            app.manage(AudioPlayer { sender });
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             load_and_play,
             toggle_playback,
             get_music_library,
-            volume_change
+            volume_change,
+            seek
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
