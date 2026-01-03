@@ -2,53 +2,13 @@
   import { errorState } from '$lib/stores/error.svelte'
   import PlayButton from './PlayButton.svelte'
   import VolumeSlider from './VolumeSlider.svelte'
-  import { playerState } from '$lib/stores/player.svelte'
-  import { onMount } from 'svelte'
-  import { listen } from '@tauri-apps/api/event'
-
-  interface AudioPosition {
-    position_seconds: number
-    duration_seconds: number
-  }
-
-  let isDragging = $state(false)
-
-  onMount(() => {
-    const unlistenPromise = listen<AudioPosition>('playback:position', (event) => {
-      console.log('Full event:', event)
-      console.log('Payload', event.payload)
-      if (!isDragging) {
-        positionMillis = Math.floor(event.payload.position_seconds * 1000)
-
-      }
-    })
-    return () => {
-      unlistenPromise.then(unlisten => unlisten())
-    }
-  })
-
-  let positionMillis = $state(0)
-
-  async function seek() {
-    console.log('seek in component')
-    await playerState.seek(positionMillis)
-  }
+  import TrackPositionSlider from './TrackPositionSlider.svelte'
 </script>
 
 
 <div class="p-2 rounded-lg ">
-  <div>
-    {#if playerState.currentSong}
-      <input
-          type="range"
-          min="0"
-          max={playerState.currentSong.duration_millis}
-          bind:value={positionMillis}
-          onchange={seek}
-          onpointerdown={() => isDragging = true}
-          onpointerup={() => isDragging = false}
-      >
-    {/if}
+  <div class="pb-4">
+    <TrackPositionSlider/>
   </div>
   <div class="flex items-center justify-between">
 

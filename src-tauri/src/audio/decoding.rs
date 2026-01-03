@@ -1,3 +1,4 @@
+use crate::audio::shared::{DecoderCommand, PlaybackState};
 use anyhow::{Context, Error};
 use ringbuf::producer::Producer;
 use ringbuf::HeapProd;
@@ -17,7 +18,6 @@ use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::{Hint, ProbeResult};
 use symphonia::core::units::Time;
 use symphonia::default::{get_codecs, get_probe};
-use crate::audio::shared::{DecoderCommand, PlaybackState};
 
 pub fn decoder_thread(
     probe_result: ProbeResult,
@@ -113,9 +113,7 @@ pub fn decoder_thread(
         let duration = decoded.capacity() as u64;
 
         // convert to f32 samples
-        let mut sample_buf = SampleBuffer::<f32>::new(
-            duration, spec,
-        );
+        let mut sample_buf = SampleBuffer::<f32>::new(duration, spec);
         sample_buf.copy_interleaved_ref(decoded);
 
         let samples = sample_buf.samples();
@@ -153,7 +151,7 @@ pub fn decoder_thread(
 
 pub fn probe_audio_file_format(path: &String) -> Result<ProbeResult, Error> {
     // open the file
-    let file = File::open(&path)?;
+    let file = File::open(path)?;
     let mss = MediaSourceStream::new(Box::new(file), Default::default());
 
     // create a hint for the probe (helps symphonia detect format)
@@ -184,10 +182,13 @@ fn decode_samples(
 ) {
     let target_seconds = target_samples as f64 / sample_rate as f64;
 
-    let seek_result = format_reader.seek(SeekMode::Accurate, SeekTo::Time {
-        time: Time::from(target_seconds),
-        track_id: Some(track_id),
-    });
+    let seek_result = format_reader.seek(
+        SeekMode::Accurate,
+        SeekTo::Time {
+            time: Time::from(target_seconds),
+            track_id: Some(track_id),
+        },
+    );
 
     if let Ok(seeked_result) = seek_result {
         println!("Seeked to timestamp: {}", seeked_result.actual_ts);

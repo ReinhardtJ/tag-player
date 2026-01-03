@@ -26,8 +26,8 @@
       <div>
         <button
             onclick={() => play(song)}
-            class={`neo-raised-xs bg-neutral-800 hover:bg-violet-500/30 rounded-lg p-2 my-1.5 w-full cursor-pointer text-left
-          ${song === playerState.currentSong ? 'dark:bg-violet-700' : ''}`}
+            class={`neo-raised-xs bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 my-1.5 w-full cursor-pointer text-left
+          ${song === playerState.currentSong ? 'bg-linear-to-br dark:from-purple-700 to-violet-700' : ''}`}
         >
           {song.name}
         </button>
@@ -47,11 +47,11 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: linear-gradient(to bottom right, #7e22ce, #6d28d9) !important;
+        background: linear-gradient(to bottom right, var(--color-purple-700), var(--color-violet-700)) !important;
         border-radius: 12px;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(to bottom right, #9333ea, #7c3aed) !important;
+        background: linear-gradient(to bottom right, var(--color-purple-600), var(--color-violet-600)) !important;
     }
 </style>

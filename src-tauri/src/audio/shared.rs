@@ -1,7 +1,3 @@
-pub fn get_duration_seconds(duration_samples: Option<u64>, sample_rate: u32) -> Option<f64> {
-    duration_samples.map(|d| d as f64 / sample_rate as f64)
-}
-
 pub enum AudioCommand {
     LoadAndPlay(String), // path to audio file
     TogglePlayback,

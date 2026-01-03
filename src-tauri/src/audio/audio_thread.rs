@@ -1,17 +1,15 @@
 use crate::audio::cpal_stream::create_audio_stream;
 use crate::audio::decoding::{decoder_thread, probe_audio_file_format};
 use crate::audio::position_updater::position_updater_thread;
-use crate::audio::shared::{get_duration_seconds, AudioCommand, DecoderCommand, PlaybackState};
-use cpal::traits::{StreamTrait};
-use ringbuf::traits::{Split};
+use crate::audio::shared::{AudioCommand, DecoderCommand, PlaybackState};
+use cpal::traits::StreamTrait;
+use cpal::Stream;
+use ringbuf::traits::Split;
 use ringbuf::HeapRb;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
-use cpal::Stream;
-use tauri::{AppHandle, Emitter};
-
+use tauri::AppHandle;
 
 pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
     let state = Arc::new(Mutex::new(PlaybackState {
@@ -21,7 +19,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
         current_position_samples: 0,
         sample_rate: 48000,
         duration_samples: None,
-        needs_buffer_clear: false
+        needs_buffer_clear: false,
     }));
 
     // spawn position updater thread
@@ -55,7 +53,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                 // Let old decoder finish in background - don't block!
                 if let Some(handle) = decoder_handle.take() {
                     thread::spawn(move || {
-                        let _ = handle.join();  // Clean up in background
+                        let _ = handle.join(); // Clean up in background
                     });
                 }
 
@@ -67,7 +65,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                     Ok(pr) => pr,
                     Err(e) => {
                         eprintln!("Failed to probe audio file: {}", e);
-                        continue;  // Skip this song, don't crash
+                        continue; // Skip this song, don't crash
                     }
                 };
 
@@ -94,17 +92,18 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
 
                 // create ring buffer (1 second at the file's sample rate and channel count)
                 // Smaller buffer = faster startup, less latency
-                let ring_buffer = HeapRb::<f32>::new(sample_rate as usize * channels as usize * 1);
+                let ring_buffer = HeapRb::<f32>::new(sample_rate as usize * channels as usize);
                 let (producer, consumer) = ring_buffer.split();
 
                 // create audio output stream with the correct sample rate and channels
-                let new_stream = match create_audio_stream(state.clone(), consumer, sample_rate, channels) {
-                    Ok(stream) => stream,
-                    Err(e) => {
-                        eprintln!("Failed to create audio output: {}", e);
-                        return;
-                    }
-                };
+                let new_stream =
+                    match create_audio_stream(state.clone(), consumer, sample_rate, channels) {
+                        Ok(stream) => stream,
+                        Err(e) => {
+                            eprintln!("Failed to create audio output: {}", e);
+                            return;
+                        }
+                    };
 
                 // start the stream
                 if let Err(e) = new_stream.play() {
@@ -126,25 +125,15 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                 let state_clone = state.clone();
 
                 decoder_handle = Some(thread::spawn(move || {
-                    if let Err(e) =
-                        decoder_thread(probe_result, producer, state_clone, decoder_command_receiver)
-                    {
+                    if let Err(e) = decoder_thread(
+                        probe_result,
+                        producer,
+                        state_clone,
+                        decoder_command_receiver,
+                    ) {
                         eprintln!("Decoder error: {}", e);
                     }
                 }));
-
-                // emit duration event after a short delay (let decoder initialize)
-                let state_clone = state.clone();
-                let app_handle_clone = app_handle.clone();
-                thread::spawn(move || {
-                    thread::sleep(Duration::from_millis(100));
-                    let state = state_clone.lock().unwrap();
-                    if let Some(duration) =
-                        get_duration_seconds(state.duration_samples, state.sample_rate)
-                    {
-                        let _ = app_handle_clone.emit("playback:duration", duration);
-                    }
-                });
             }
 
             Ok(AudioCommand::TogglePlayback) => {

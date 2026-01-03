@@ -23,7 +23,5 @@ fn test_gather_music_library_one_file_with_tags() {
         assert_eq!(song.name, "some_song.mp3");
         assert_eq!(song.tags.track_number, Some(1));
     } else {
-
     }
 }
-

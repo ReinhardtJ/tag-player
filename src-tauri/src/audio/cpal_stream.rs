@@ -1,10 +1,13 @@
-use std::sync::{Arc, Mutex};
-use cpal::{default_host, Device, FromSample, OutputCallbackInfo, Sample, SampleFormat, SizedSample, Stream, StreamConfig};
-use anyhow::{anyhow, Context, Error};
-use ringbuf::HeapCons;
-use cpal::traits::{DeviceTrait, HostTrait};
-use ringbuf::consumer::Consumer;
 use crate::audio::shared::PlaybackState;
+use anyhow::{anyhow, Context, Error};
+use cpal::traits::{DeviceTrait, HostTrait};
+use cpal::{
+    default_host, Device, FromSample, OutputCallbackInfo, Sample, SampleFormat, SizedSample,
+    Stream, StreamConfig,
+};
+use ringbuf::consumer::Consumer;
+use ringbuf::HeapCons;
+use std::sync::{Arc, Mutex};
 
 pub fn create_audio_stream(
     state: Arc<Mutex<PlaybackState>>,
@@ -26,10 +29,16 @@ pub fn create_audio_stream(
     println!("Using stream config: {:?}", config);
 
     let stream = match default_config.sample_format() {
-        SampleFormat::F32 => build_specific_format_stream::<f32>(&device, &config, state, consumer)?,
-        SampleFormat::I16 => build_specific_format_stream::<i16>(&device, &config, state, consumer)?,
-        SampleFormat::U16 => build_specific_format_stream::<u16>(&device, &config, state, consumer)?,
-        _ => return Err(anyhow!("Unsupported sample format"))
+        SampleFormat::F32 => {
+            build_specific_format_stream::<f32>(&device, &config, state, consumer)?
+        }
+        SampleFormat::I16 => {
+            build_specific_format_stream::<i16>(&device, &config, state, consumer)?
+        }
+        SampleFormat::U16 => {
+            build_specific_format_stream::<u16>(&device, &config, state, consumer)?
+        }
+        _ => return Err(anyhow!("Unsupported sample format")),
     };
 
     Ok(stream)
@@ -51,16 +60,17 @@ fn build_specific_format_stream<T>(
     config: &StreamConfig,
     state: Arc<Mutex<PlaybackState>>,
     mut consumer: HeapCons<f32>,
-) -> Result<Stream, Error> where
+) -> Result<Stream, Error>
+where
     T: Sample + SizedSample + FromSample<f32>,
 {
     let channels = config.channels as usize;
 
     let stream = device.build_output_stream(
         config,
-        move |data: &mut [T], oci: &OutputCallbackInfo| audio_callback(
-            data, oci, &state, &mut consumer, channels,
-        ),
+        move |data: &mut [T], oci: &OutputCallbackInfo| {
+            audio_callback(data, oci, &state, &mut consumer, channels)
+        },
         |err| eprintln!("Audio stream error: {}", err),
         None,
     )?;
@@ -92,7 +102,7 @@ fn audio_callback<T>(
     };
 
     // check if we need to clear the buffer
-    { 
+    {
         let mut state = state.lock().unwrap();
         if state.needs_buffer_clear {
             consumer.clear();
