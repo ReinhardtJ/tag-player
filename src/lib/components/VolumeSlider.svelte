@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core'
   import { Volume2 } from '@lucide/svelte'
+  import { playerState } from '$lib/stores/player.svelte'
+  import { onMount } from 'svelte'
+  import { listen } from '@tauri-apps/api/event'
 
   let volume = $state(50)
 
   async function onVolumeChange() {
-    await invoke('volume_change', { volume: volume / 100 })
+    await playerState.changeVolume(volume / 100)
   }
 </script>
 
 <div class="flex items-center gap-2">
-  <Volume2 size={20} />
+  <Volume2 size={20}/>
   <input
       type="range"
       min="0"
@@ -35,22 +37,21 @@
     .neo-slider::-webkit-slider-runnable-track {
         width: 100%;
         height: 18px;
-        background: 
-            radial-gradient(circle at var(--volume-percent) 50%, 
-                var(--color-violet-700) 0%, 
-                var(--color-violet-700) 9px,
-                transparent 9px
-            ),
-            linear-gradient(
+        background: radial-gradient(circle at var(--volume-percent) 50%,
+        var(--color-violet-700) 0%,
+        var(--color-violet-700) 9px,
+        transparent 9px
+        ),
+        linear-gradient(
                 to right,
                 var(--color-purple-700) 0%,
                 var(--color-violet-700) var(--volume-percent),
                 var(--color-neutral-800) var(--volume-percent),
                 var(--color-neutral-800) 100%
-            );
+        );
         border-radius: 12px;
         box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.4),
-                    inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+        inset -2px -2px 4px rgba(255, 255, 255, 0.05);
     }
 
     /* Thumb - Invisible but still draggable */

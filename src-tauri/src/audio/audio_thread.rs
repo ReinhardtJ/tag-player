@@ -1,4 +1,4 @@
-use crate::audio::cpal_stream::create_audio_output;
+use crate::audio::cpal_stream::create_audio_stream;
 use crate::audio::decoding::{decoder_thread, probe_audio_file_format};
 use crate::audio::position_updater::position_updater_thread;
 use crate::audio::shared::{get_duration_seconds, AudioCommand, DecoderCommand, PlaybackState};
@@ -21,6 +21,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
         current_position_samples: 0,
         sample_rate: 48000,
         duration_samples: None,
+        needs_buffer_clear: false
     }));
 
     // spawn position updater thread
@@ -97,7 +98,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                 let (producer, consumer) = ring_buffer.split();
 
                 // create audio output stream with the correct sample rate and channels
-                let new_stream = match create_audio_output(state.clone(), consumer, sample_rate, channels) {
+                let new_stream = match create_audio_stream(state.clone(), consumer, sample_rate, channels) {
                     Ok(stream) => stream,
                     Err(e) => {
                         eprintln!("Failed to create audio output: {}", e);
@@ -164,6 +165,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                 println!("Volume: {}", volume);
             }
             Ok(AudioCommand::Seek(position_seconds)) => {
+                println!("Seeking to: {}s", position_seconds);
                 if let Some(decoder_command_sender) = &decoder_command_sender {
                     let state = state.lock().unwrap();
                     let sample_rate = state.sample_rate;

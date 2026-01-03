@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/core'
+
 interface Tags {
   title: string
   artist: string
@@ -12,6 +14,7 @@ interface Tags {
 interface Song {
   path: string
   name: string
+  duration_millis: number
   tags: Tags
 }
 
@@ -37,6 +40,14 @@ class PlayerState {
     this.isPlaying = false
     this.isLoaded = false
     this.currentSong = null
+  }
+
+  async seek(positionMillis: number) {
+    await invoke('seek', { positionMillis })
+  }
+
+  async changeVolume(volumeFrom0To1: number) {
+    await invoke('volume_change', { volume: volumeFrom0To1 })
   }
 }
 

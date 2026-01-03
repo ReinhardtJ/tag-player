@@ -6,7 +6,7 @@ use cpal::traits::{DeviceTrait, HostTrait};
 use ringbuf::consumer::Consumer;
 use crate::audio::shared::PlaybackState;
 
-pub fn create_audio_output(
+pub fn create_audio_stream(
     state: Arc<Mutex<PlaybackState>>,
     consumer: HeapCons<f32>,
     sample_rate: u32,
@@ -26,9 +26,9 @@ pub fn create_audio_output(
     println!("Using stream config: {:?}", config);
 
     let stream = match default_config.sample_format() {
-        SampleFormat::F32 => build_stream::<f32>(&device, &config, state, consumer)?,  // No .into()
-        SampleFormat::I16 => build_stream::<i16>(&device, &config, state, consumer)?,
-        SampleFormat::U16 => build_stream::<u16>(&device, &config, state, consumer)?,
+        SampleFormat::F32 => build_specific_format_stream::<f32>(&device, &config, state, consumer)?,
+        SampleFormat::I16 => build_specific_format_stream::<i16>(&device, &config, state, consumer)?,
+        SampleFormat::U16 => build_specific_format_stream::<u16>(&device, &config, state, consumer)?,
         _ => return Err(anyhow!("Unsupported sample format"))
     };
 
@@ -46,7 +46,7 @@ fn get_default_audio_device() -> Result<Device, Error> {
     Ok(device)
 }
 
-fn build_stream<T>(
+fn build_specific_format_stream<T>(
     device: &Device,
     config: &StreamConfig,
     state: Arc<Mutex<PlaybackState>>,
@@ -90,6 +90,16 @@ fn audio_callback<T>(
         }
         state_guard.volume
     };
+
+    // check if we need to clear the buffer
+    { 
+        let mut state = state.lock().unwrap();
+        if state.needs_buffer_clear {
+            consumer.clear();
+            state.needs_buffer_clear = false;
+            println!("cleared audio buffer after seek")
+        }
+    }
 
     // read from ring buffer
     let mut temp_buffer = vec![0.0f32; data.len()];

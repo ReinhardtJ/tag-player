@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use lofty::prelude::*;
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
+
 #[derive(serde::Serialize, Default)]
 pub struct Tags {
     pub title: Option<String>,
@@ -18,6 +19,7 @@ pub struct Tags {
 pub struct Song {
     pub path: String,
     pub name: String,
+    pub duration_millis: u32,
     pub tags: Tags,
 }
 
@@ -25,6 +27,11 @@ pub struct Song {
 pub struct Library {
     pub songs: Vec<Song>,
     pub errors: Vec<String>,
+}
+
+struct Properties {
+    tags: Tags,
+    duration_millis: u32,
 }
 
 pub fn gather_music_library(library_dir: &Path) -> Library {
@@ -59,8 +66,13 @@ pub fn gather_music_library(library_dir: &Path) -> Library {
             None => continue,
         };
 
-        match read_tags(entry.path()) {
-            Ok(tags) => songs.push(Song { path, name, tags }),
+        match read_audio_file_properties(entry.path()) {
+            Ok(properties) => songs.push(Song {
+                path,
+                name,
+                duration_millis: properties.duration_millis,
+                tags: properties.tags,
+            }),
             Err(e) => errors.push(format!("{}, {:?}", path, e)),
         }
     }
@@ -68,15 +80,21 @@ pub fn gather_music_library(library_dir: &Path) -> Library {
     Library { songs, errors }
 }
 
-fn read_tags(path: &Path) -> Result<Tags> {
+fn read_audio_file_properties(path: &Path) -> Result<Properties> {
     let tagged_file = lofty::read_from_path(path)
         .with_context(|| format!("Failed to read audio file: {}", path.display()))?;
 
+    // Get duration from audio properties
+    let duration_millis = tagged_file.properties().duration().as_millis() as u32;
+
     let Some(tag) = tagged_file.primary_tag() else {
-        return Ok(Tags::default())
+        return Ok(Properties {
+            tags: Tags::default(),
+            duration_millis,
+        });
     };
 
-    Ok(Tags {
+    let tags = Tags {
         title: tag.title().map(|title| title.to_string()),
         artist: tag.artist().map(|artist| artist.to_string()),
         album_artist: tag
@@ -89,6 +107,11 @@ fn read_tags(path: &Path) -> Result<Tags> {
         genre: tag.genre().map(|genre| genre.to_string()),
         mood: tag.get_string(&ItemKey::Mood).map(|mood| mood.to_string()),
         track_number: tag.track(),
+    };
+
+    Ok(Properties {
+        tags,
+        duration_millis,
     })
 }
 
@@ -112,7 +135,7 @@ mod tests {
     #[test]
     fn test_read_tags_nonexistent_file() {
         // Reading tags from a non-existent file should return appropriate IO error
-        assert!(read_tags(Path::new("/nonexistent/file.mp3")).is_err());
+        let result = read_audio_file_properties(Path::new("/nonexistent/file.mp3"));
+        assert!(result.is_err());
     }
 }
-

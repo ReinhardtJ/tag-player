@@ -47,6 +47,7 @@ pub fn decoder_thread(
         state.current_position_samples = 0;
         state.is_playing = true;
         state.is_paused = false;
+        state.needs_buffer_clear = false;
     }
 
     println!(
@@ -193,6 +194,7 @@ fn decode_samples(
 
         let mut state = state.lock().unwrap();
         state.current_position_samples = target_samples;
+        state.needs_buffer_clear = true;
 
         decoder.reset();
     } else {

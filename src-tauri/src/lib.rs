@@ -4,11 +4,11 @@ mod audio;
 
 use crate::music_library::{gather_music_library, Library};
 use std::path::Path;
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Sender};
 use std::thread;
 use tauri::{Manager, State};
 use crate::audio::audio_thread::audio_thread;
-use crate::audio::shared::{AudioCommand, AudioPlayer};
+use crate::audio::shared::AudioCommand;
 
 #[tauri::command]
 fn load_and_play(path: String, state: State<AudioPlayer>) -> Result<(), String> {
@@ -43,10 +43,13 @@ fn volume_change(volume: f32, state: State<AudioPlayer>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn seek(position: f64, state: State<AudioPlayer>) -> Result<(), String> {
+fn seek(position_millis: u32, state: State<AudioPlayer>) -> Result<(), String> {
+    println!("in seek command handler");
+    // convert millis to fractional seconds
+    let position_seconds = position_millis as f64 / 1000f64;
     state
         .sender
-        .send(AudioCommand::Seek(position))
+        .send(AudioCommand::Seek(position_seconds))
         .map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -76,4 +79,8 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+pub struct AudioPlayer {
+    pub sender: Sender<AudioCommand>,
 }
