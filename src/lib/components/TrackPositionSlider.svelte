@@ -7,13 +7,12 @@
     position_seconds: number
   }
 
-  let positionMillis = $state(0)
   let isDragging = $state(false)
 
   onMount(() => {
     const unlistenPromise = listen<TrackPosition>('playback:position', (event) => {
-      if (!isDragging) {
-        positionMillis = Math.floor(event.payload.position_seconds * 1000)
+      if (!isDragging && !playerState.isSeeking) {
+        playerState.positionMillis = Math.floor(event.payload.position_seconds * 1000)
       }
     })
     return () => {
@@ -21,23 +20,32 @@
     }
   })
 
-  async function seek() {
-    await playerState.seek(positionMillis)
+
+  function formatTime(millis: number): string {
+    const totalSeconds = Math.floor(millis / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 </script>
 
 {#if playerState.currentSong}
-  <input
-      type="range"
-      min="0"
-      max={playerState.currentSong.duration_millis}
-      bind:value={positionMillis}
-      onchange={seek}
-      onpointerdown={() => isDragging = true}
-      onpointerup={() => isDragging = false}
-      class="w-full neo-slider"
-      style="--position-percent: {(positionMillis / playerState.currentSong.duration_millis) * 100}%"
-  >
+  <div class="flex items-center gap-3">
+    <span class="text-sm text-neutral-400 dark:text-neutral-500 font-mono tabular-nums">
+      {formatTime(playerState.positionMillis)} / {formatTime(playerState.currentSong.duration_millis)}
+    </span>
+    <input
+        type="range"
+        min="0"
+        max={playerState.currentSong.duration_millis}
+        bind:value={playerState.positionMillis}
+        onchange={() => playerState.seek()}
+        onpointerdown={() => isDragging = true}
+        onpointerup={() => isDragging = false}
+        class="flex-1 neo-slider"
+        style="--position-percent: {(playerState.positionMillis / playerState.currentSong.duration_millis) * 100}%"
+    >
+  </div>
 {/if}
 
 <style>

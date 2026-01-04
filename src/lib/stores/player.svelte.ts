@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { errorState } from '$lib/stores/error.svelte'
 
 interface Tags {
   title: string
@@ -29,6 +30,8 @@ class PlayerState {
   isLoaded = $state(false)
   currentSong = $state<Song | null>(null)
   searchQuery = $state('')
+  positionMillis = $state(0)
+  isSeeking = $state(false)
 
   filteredSongs = $derived(
     this.searchQuery.trim() === ''
@@ -40,15 +43,41 @@ class PlayerState {
     this.isPlaying = false
     this.isLoaded = false
     this.currentSong = null
+    this.positionMillis = 0
   }
 
-  async seek(positionMillis: number) {
-    await invoke('seek', { positionMillis })
+  async seek() {
+    try {
+      this.isSeeking = true
+      await invoke('seek', { positionMillis: this.positionMillis })
+    } finally {
+      // pause updates for another 100ms to avoid jumping while
+      // position update thread is still aligning to decoder thread
+      setTimeout(() => this.isSeeking = false, 100)
+    }
   }
 
   async changeVolume(volumeFrom0To1: number) {
     await invoke('volume_change', { volume: volumeFrom0To1 })
   }
+
+  async play(song: Song) {
+    try {
+      const result = await invoke('load_and_play', { path: song.path })
+      if (result !== null) {
+        errorState.error = String(result)
+        return
+      }
+      this.reset()
+      this.isLoaded = true
+      this.isPlaying = true
+      this.currentSong = song
+      errorState.error = ''
+    } catch (e) {
+      errorState.error = String(e)
+    }
+  }
+
 }
 
 function matchesSearch(song: Song, query: string): boolean {
