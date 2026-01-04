@@ -149,7 +149,7 @@ pub fn decoder_thread(
     Ok(())
 }
 
-pub fn probe_audio_file_format(path: &String) -> Result<ProbeResult, Error> {
+pub fn probe_audio_file_format(path: &str) -> Result<ProbeResult, Error> {
     // open the file
     let file = File::open(path)?;
     let mss = MediaSourceStream::new(Box::new(file), Default::default());

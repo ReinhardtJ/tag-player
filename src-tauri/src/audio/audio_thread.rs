@@ -90,8 +90,6 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
 
                 println!("File sample rate: {}, channels: {}", sample_rate, channels);
 
-                // create ring buffer (1 second at the file's sample rate and channel count)
-                // Smaller buffer = faster startup, less latency
                 let ring_buffer = HeapRb::<f32>::new(sample_rate as usize * channels as usize);
                 let (producer, consumer) = ring_buffer.split();
 
@@ -144,7 +142,7 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
                     if state.is_paused {
                         "paused"
                     } else {
-                        "resumend"
+                        "resumed"
                     }
                 );
             }

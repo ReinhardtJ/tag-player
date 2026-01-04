@@ -6,9 +6,6 @@ use tauri::{AppHandle, Emitter};
 
 pub fn position_updater_thread(state: Arc<Mutex<PlaybackState>>, app_handle: AppHandle) {
     loop {
-        // update 5 times a second
-        thread::sleep(Duration::from_millis(200));
-
         let (position, is_playing) = {
             let state = state.lock().unwrap();
             (
@@ -18,8 +15,7 @@ pub fn position_updater_thread(state: Arc<Mutex<PlaybackState>>, app_handle: App
         };
 
         if !is_playing {
-            // sleep longer when not playing to reduce CPU usage
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(Duration::from_millis(40));
             continue;
         }
 
@@ -30,6 +26,9 @@ pub fn position_updater_thread(state: Arc<Mutex<PlaybackState>>, app_handle: App
                 position_seconds: position,
             },
         );
+
+        // update 25 times a second
+        thread::sleep(Duration::from_millis(40));
     }
 }
 
