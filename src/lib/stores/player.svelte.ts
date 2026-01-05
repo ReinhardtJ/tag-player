@@ -2,14 +2,14 @@ import { invoke } from '@tauri-apps/api/core'
 import { errorState } from '$lib/stores/error.svelte'
 
 interface Tags {
-  title: string
-  artist: string
-  album_artist: string
-  album: string
-  date: string
-  genre: string
-  mood: string
-  track_number: number
+  title: string | null
+  artist: string | null
+  album_artist: string | null
+  album: string | null
+  date: string | null
+  genre: string | null
+  mood: string | null
+  track_number: number | null
 }
 
 interface Song {
