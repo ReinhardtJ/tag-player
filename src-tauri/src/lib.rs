@@ -4,7 +4,7 @@ pub mod music_library;
 
 use crate::audio::audio_thread::audio_thread;
 use crate::audio::shared::AudioCommand;
-use crate::music_library::{gather_music_library, Library};
+use crate::music_library::{gather_music_library, write_tags_to_file, Library, Tags};
 use std::path::Path;
 use std::sync::mpsc::{channel, Sender};
 use std::thread;
@@ -54,6 +54,13 @@ fn seek(position_millis: u32, state: State<AudioPlayer>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn write_tags(path: String, tags: Tags) -> Result<(), String> {
+    write_tags_to_file(Path::new(&path), &tags)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -74,7 +81,8 @@ pub fn run() {
             toggle_playback,
             get_music_library,
             volume_change,
-            seek
+            seek,
+            write_tags
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

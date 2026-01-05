@@ -1,9 +1,11 @@
 use anyhow::{Context, Result};
+use lofty::config::WriteOptions;
 use lofty::prelude::*;
+use lofty::tag::Tag;
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(serde::Serialize, Default)]
+#[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Tags {
     pub title: Option<String>,
     pub artist: Option<String>,
@@ -126,6 +128,57 @@ fn is_music_file(entry: &DirEntry) -> bool {
         .and_then(|ext| ext.to_str())
         .map(|ext| matches!(ext.to_lowercase().as_str(), "mp3" | "wav" | "flac"))
         .unwrap_or(false)
+}
+
+pub fn write_tags_to_file(path: &Path, tags: &Tags) -> Result<()> {
+    let mut tagged_file = lofty::read_from_path(path)
+        .with_context(|| format!("Failed to read audio file: {}", path.display()))?;
+
+    // Get or create primary tag
+    let tag = match tagged_file.primary_tag_mut() {
+        Some(tag) => tag,
+        None => {
+            // If no tag exists, create one based on file type
+            let file_type = tagged_file.file_type();
+            let tag_type = file_type.primary_tag_type();
+            tagged_file.insert_tag(Tag::new(tag_type));
+            tagged_file.primary_tag_mut().unwrap()
+        }
+    };
+
+    // Clear existing tags and set new ones
+    tag.clear();
+
+    if let Some(title) = &tags.title {
+        tag.set_title(title.to_string());
+    }
+    if let Some(artist) = &tags.artist {
+        tag.set_artist(artist.to_string());
+    }
+    if let Some(album_artist) = &tags.album_artist {
+        tag.insert_text(ItemKey::AlbumArtist, album_artist.to_string());
+    }
+    if let Some(album) = &tags.album {
+        tag.set_album(album.to_string());
+    }
+    if let Some(date) = &tags.date {
+        tag.insert_text(ItemKey::RecordingDate, date.to_string());
+    }
+    if let Some(genre) = &tags.genre {
+        tag.set_genre(genre.to_string());
+    }
+    if let Some(mood) = &tags.mood {
+        tag.insert_text(ItemKey::Mood, mood.to_string());
+    }
+    if let Some(track_number) = tags.track_number {
+        tag.set_track(track_number);
+    }
+
+    // Save changes to file
+    tagged_file.save_to_path(path, WriteOptions::default())
+        .with_context(|| format!("Failed to save tags to file: {}", path.display()))?;
+
+    Ok(())
 }
 
 #[cfg(test)]
