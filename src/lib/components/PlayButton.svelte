@@ -7,7 +7,7 @@
   async function togglePlayback() {
     const result = await invoke('toggle_playback')
     if (result !== null) {
-      errorState.error = String(result)
+      errorState.addError(String(result))
       return
     }
     playerState.isPlaying = !playerState.isPlaying

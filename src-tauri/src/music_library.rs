@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
-use lofty::config::WriteOptions;
+use lofty::config::{ParseOptions, ParsingMode, WriteOptions};
 use lofty::prelude::*;
+use lofty::probe::Probe;
 use lofty::tag::Tag;
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
@@ -36,7 +37,7 @@ struct Properties {
     duration_millis: u32,
 }
 
-pub fn gather_music_library(library_dir: &Path) -> Library {
+pub fn read_music_library(library_dir: &Path) -> Library {
     let mut songs = Vec::new();
     let mut errors = Vec::new();
 
@@ -83,7 +84,11 @@ pub fn gather_music_library(library_dir: &Path) -> Library {
 }
 
 fn read_audio_file_properties(path: &Path) -> Result<Properties> {
-    let tagged_file = lofty::read_from_path(path)
+    let parse_options = ParseOptions::new().parsing_mode(ParsingMode::Relaxed);
+
+    let tagged_file = Probe::open(path)?
+        .options(parse_options)
+        .read()
         .with_context(|| format!("Failed to read audio file: {}", path.display()))?;
 
     // Get duration from audio properties
@@ -122,11 +127,9 @@ fn is_music_file(entry: &DirEntry) -> bool {
         return false;
     }
 
-    entry
-        .path()
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| matches!(ext.to_lowercase().as_str(), "mp3" | "wav" | "flac"))
+    let extension = get_file_extension(entry.path());
+    extension
+        .map(|ext| matches!(ext.as_str(), "mp3" | "flac" | "wav"))
         .unwrap_or(false)
 }
 
@@ -175,7 +178,8 @@ pub fn write_tags_to_file(path: &Path, tags: &Tags) -> Result<()> {
     }
 
     // Save changes to file
-    tagged_file.save_to_path(path, WriteOptions::default())
+    tagged_file
+        .save_to_path(path, WriteOptions::default())
         .with_context(|| format!("Failed to save tags to file: {}", path.display()))?;
 
     Ok(())
@@ -191,4 +195,11 @@ mod tests {
         let result = read_audio_file_properties(Path::new("/nonexistent/file.mp3"));
         assert!(result.is_err());
     }
+}
+
+pub fn get_file_extension(path: &Path) -> Option<String> {
+    path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_lowercase())
 }

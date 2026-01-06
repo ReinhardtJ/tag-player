@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { errorState } from '$lib/stores/error.svelte'
 
-interface Tags {
+export interface Tags {
   title: string | null
   artist: string | null
   album_artist: string | null
@@ -57,6 +57,12 @@ class PlayerState {
     }
   }
 
+  async loadMusicLibrary(libraryPath: string) {
+    const library = await invoke('get_music_library', { path: libraryPath }) as Library
+    errorState.addError(library.errors.join(',\n'))
+    this.library = library
+  }
+
   async changeVolume(volumeFrom0To1: number) {
     await invoke('volume_change', { volume: volumeFrom0To1 })
   }
@@ -65,16 +71,15 @@ class PlayerState {
     try {
       const result = await invoke('load_and_play', { path: song.path })
       if (result !== null) {
-        errorState.error = String(result)
+        errorState.addError(String(result))
         return
       }
       this.reset()
       this.isLoaded = true
       this.isPlaying = true
       this.currentSong = song
-      errorState.error = ''
     } catch (e) {
-      errorState.error = String(e)
+      errorState.addError(String(e))
     }
   }
 

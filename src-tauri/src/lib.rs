@@ -4,7 +4,7 @@ pub mod music_library;
 
 use crate::audio::audio_thread::audio_thread;
 use crate::audio::shared::AudioCommand;
-use crate::music_library::{gather_music_library, write_tags_to_file, Library, Tags};
+use crate::music_library::{read_music_library, write_tags_to_file, Library, Tags};
 use std::path::Path;
 use std::sync::mpsc::{channel, Sender};
 use std::thread;
@@ -30,7 +30,7 @@ fn toggle_playback(state: State<AudioPlayer>) -> Result<(), String> {
 
 #[tauri::command]
 fn get_music_library(path: String) -> Library {
-    gather_music_library(Path::new(&path))
+    read_music_library(Path::new(&path))
 }
 
 #[tauri::command]

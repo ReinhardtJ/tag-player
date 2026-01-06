@@ -2,9 +2,7 @@ use crate::audio::shared::{DecoderCommand, PlaybackState};
 use anyhow::{Context, Error};
 use ringbuf::producer::Producer;
 use ringbuf::HeapProd;
-use std::fs::File;
 use std::io::ErrorKind;
-use std::path::Path;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -12,12 +10,10 @@ use std::time::Duration;
 use symphonia::core::audio::SampleBuffer;
 use symphonia::core::codecs::{Decoder, DecoderOptions};
 use symphonia::core::errors::Error::IoError;
-use symphonia::core::formats::{FormatOptions, FormatReader, SeekMode, SeekTo};
-use symphonia::core::io::MediaSourceStream;
-use symphonia::core::meta::MetadataOptions;
-use symphonia::core::probe::{Hint, ProbeResult};
+use symphonia::core::formats::{FormatReader, SeekMode, SeekTo};
+use symphonia::core::probe::ProbeResult;
 use symphonia::core::units::Time;
-use symphonia::default::{get_codecs, get_probe};
+use symphonia::default::get_codecs;
 
 pub fn decoder_thread(
     probe_result: ProbeResult,
@@ -147,29 +143,6 @@ pub fn decoder_thread(
     let mut state = state.lock().unwrap();
     state.is_playing = false;
     Ok(())
-}
-
-pub fn probe_audio_file_format(path: &str) -> Result<ProbeResult, Error> {
-    // open the file
-    let file = File::open(path)?;
-    let mss = MediaSourceStream::new(Box::new(file), Default::default());
-
-    // create a hint for the probe (helps symphonia detect format)
-    let mut hint = Hint::new();
-    if let Some(ext) = Path::new(&path).extension() {
-        if let Some(ext_str) = ext.to_str() {
-            hint.with_extension(ext_str);
-        }
-    }
-
-    // probe the media source for format
-    let probed = get_probe().format(
-        &hint,
-        mss,
-        &FormatOptions::default(),
-        &MetadataOptions::default(),
-    )?;
-    Ok(probed)
 }
 
 fn decode_samples(
