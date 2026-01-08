@@ -1,13 +1,15 @@
-<div class="flex justify-between items-center rounded-lg p-2">
+<div class="flex justify-between items-center p-2">
   <OpenFolderButton/>
   <SearchBar/>
+  <div class="flex">
   {#if errorState.errors.length > 0}
     <a
         href="/error"
-        class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600 inline-flex items-center justify-center"
+        class="mr-2 neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
     >Errors ({errorState.errors.length})</a>
   {/if}
   <ThemeToggle/>
+  </div>
 </div>
 
 <script lang="ts">
