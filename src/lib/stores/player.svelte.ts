@@ -36,7 +36,7 @@ class PlayerState {
   filteredSongs = $derived(
     this.searchQuery.trim() === ''
       ? this.library.songs
-      : this.library.songs.filter(song => matchesSearch(song, this.searchQuery))
+      : this.library.songs.filter((song) => matchesSearch(song, this.searchQuery))
   )
 
   reset() {
@@ -53,12 +53,12 @@ class PlayerState {
     } finally {
       // pause updates for another 100ms to avoid jumping while
       // position update thread is still aligning to decoder thread
-      setTimeout(() => this.isSeeking = false, 100)
+      setTimeout(() => (this.isSeeking = false), 100)
     }
   }
 
   async loadMusicLibrary(libraryPath: string) {
-    const library = await invoke('get_music_library', { path: libraryPath }) as Library
+    const library = (await invoke('get_music_library', { path: libraryPath })) as Library
     errorState.addError(library.errors.join(',\n'))
     this.library = library
   }
@@ -82,7 +82,6 @@ class PlayerState {
       errorState.addError(String(e))
     }
   }
-
 }
 
 function matchesSearch(song: Song, query: string): boolean {
@@ -95,12 +94,10 @@ function matchesSearch(song: Song, query: string): boolean {
     song.tags.album_artist,
     song.tags.album,
     song.tags.genre,
-    song.tags.mood,
+    song.tags.mood
   ]
 
-  return searchableFields.some(
-    field => field?.toLowerCase().includes(searchTerm)
-  )
+  return searchableFields.some((field) => field?.toLowerCase().includes(searchTerm))
 }
 
 export const playerState = new PlayerState()

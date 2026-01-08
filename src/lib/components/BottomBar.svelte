@@ -1,17 +1,8 @@
-<script lang="ts">
-  import { errorState } from '$lib/stores/error.svelte'
-  import PlayButton from './PlayButton.svelte'
-  import VolumeSlider from './VolumeSlider.svelte'
-  import TrackPositionSlider from './TrackPositionSlider.svelte'
-</script>
-
-
-<div class="p-2 rounded-lg ">
+<div class="p-2 rounded-lg">
   <div class="pb-4">
-    <TrackPositionSlider/>
+    <TrackPositionSlider />
   </div>
   <div class="flex items-center justify-between">
-
     <!-- Left: Error message -->
     <div class="flex-1">
       {#if errorState.error}
@@ -21,12 +12,19 @@
 
     <!-- Center: Play/Pause button -->
     <div class="flex-1 flex justify-center">
-      <PlayButton/>
+      <PlayButton />
     </div>
 
     <!-- Right: Volume controls -->
     <div class="flex-1 flex justify-end">
-      <VolumeSlider/>
+      <VolumeSlider />
     </div>
   </div>
 </div>
+
+<script lang="ts">
+  import { errorState } from '$lib/stores/error.svelte'
+  import PlayButton from './PlayButton.svelte'
+  import VolumeSlider from './VolumeSlider.svelte'
+  import TrackPositionSlider from './TrackPositionSlider.svelte'
+</script>

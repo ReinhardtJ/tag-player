@@ -1,10 +1,3 @@
-<script lang="ts">
-  import TopBar from '$lib/components/TopBar.svelte'
-  import FileList from '$lib/components/FileList.svelte'
-  import TagEditor from '$lib/components/TagEditor.svelte'
-  import BottomBar from '$lib/components/BottomBar.svelte'
-</script>
-
 <main class="bg-white dark:bg-linear-to-br dark:from-neutral-800 dark:to-neutral-900">
   <div class="grid grid-cols-2 grid-rows-[auto_1fr_auto] h-screen gap-2">
     <div class="col-span-2 mt-2 mx-2">
@@ -21,3 +14,10 @@
     </div>
   </div>
 </main>
+
+<script lang="ts">
+  import TopBar from '$lib/components/TopBar.svelte'
+  import FileList from '$lib/components/FileList.svelte'
+  import TagEditor from '$lib/components/TagEditor.svelte'
+  import BottomBar from '$lib/components/BottomBar.svelte'
+</script>

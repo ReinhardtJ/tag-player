@@ -1,3 +1,14 @@
+<button
+  onclick={toggleDarkMode}
+  class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
+>
+  {#if isDarkMode}
+    <Sun size={20} />
+  {:else}
+    <Moon size={20} />
+  {/if}
+</button>
+
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Moon, Sun } from '@lucide/svelte'
@@ -29,13 +40,3 @@
     localStorage.setItem('darkMode', String(isDarkMode))
   }
 </script>
-
-<button
-    onclick={toggleDarkMode}
-    class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600">
-  {#if isDarkMode}
-    <Sun size={20} />
-  {:else}
-    <Moon size={20} />
-  {/if}
-</button>
