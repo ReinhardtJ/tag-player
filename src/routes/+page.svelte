@@ -1,4 +1,4 @@
-<main class="bg-white dark:bg-linear-to-br dark:from-neutral-800 dark:to-neutral-900">
+<main>
   <div class="grid grid-cols-2 grid-rows-[auto_1fr_auto] h-screen gap-2">
     <div class="col-span-2 mt-2 mx-2">
       <TopBar />

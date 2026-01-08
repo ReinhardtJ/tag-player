@@ -1,14 +1,11 @@
-import { playerState } from '$lib/stores/player.svelte'
-
 class ErrorState {
-  // error = $derived(playerState.library.errors.join(',\n'))
-  private _error = $state('')
-  get error() {
-    return this._error
+  private _errors = $state<string[]>([])
+  get errors() {
+    return this._errors
   }
 
   addError(error: string) {
-    this._error = error
+    this._errors.push(error)
   }
 }
 

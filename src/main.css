@@ -7,20 +7,18 @@ html {
 }
 
 .dark {
-  color: theme(colors.slate.100);
+  color: var(--color-slate-100);
 }
 
-.gradient-border {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(45deg, var(--color-purple-500), var(--color-violet-500)) border-box;
-  border: 1px solid transparent;
+.dark main {
+  background: linear-gradient(135deg, var(--color-neutral-800), var(--color-neutral-900));
 }
 
 .dark .gradient-border {
   background:
     linear-gradient(var(--color-neutral-800), var(--color-neutral-800)) padding-box,
     linear-gradient(0deg, var(--color-neutral-800), var(--color-neutral-700)) border-box;
+  border: 1px solid transparent;
 }
 
 .gradient-blur {

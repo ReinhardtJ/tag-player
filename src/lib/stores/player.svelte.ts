@@ -59,7 +59,9 @@ class PlayerState {
 
   async loadMusicLibrary(libraryPath: string) {
     const library = (await invoke('get_music_library', { path: libraryPath })) as Library
-    errorState.addError(library.errors.join(',\n'))
+    for (const error of library.errors) {
+      errorState.addError(error)
+    }
     this.library = library
   }
 
