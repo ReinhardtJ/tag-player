@@ -1,24 +1,24 @@
-use std::fs::File;
-use std::path::Path;
 use crate::audio::cpal_stream::create_audio_stream;
 use crate::audio::decoding::decoder_thread;
 use crate::audio::position_updater::position_updater_thread;
 use crate::audio::shared::{AudioCommand, DecoderCommand, PlaybackState};
+use anyhow::Error;
 use cpal::traits::StreamTrait;
 use cpal::Stream;
 use ringbuf::traits::Split;
 use ringbuf::HeapRb;
+use std::fs::File;
+use std::path::Path;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
-use tauri::AppHandle;
-use symphonia::core::probe::{Hint, ProbeResult};
-use anyhow::Error;
-use symphonia::core::io::MediaSourceStream;
-use symphonia::default::get_probe;
 use symphonia::core::formats::FormatOptions;
+use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
+use symphonia::core::probe::{Hint, ProbeResult};
+use symphonia::default::get_probe;
+use tauri::AppHandle;
 
 pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
     let state = Arc::new(Mutex::new(PlaybackState {
@@ -46,46 +46,23 @@ pub fn audio_thread(receiver: Receiver<AudioCommand>, app_handle: AppHandle) {
     loop {
         match receiver.recv() {
             Ok(AudioCommand::LoadAndPlay(path)) => {
-                match load_and_play(
+                load_and_play(
                     &state,
                     &mut decoder_handle,
                     &mut decoder_command_sender,
                     &mut stream,
                     &path,
-                ) {
-                    true => continue,
-                    false => return,
-                };
+                );
             }
 
             Ok(AudioCommand::TogglePlayback) => {
-                let mut state = state.lock().unwrap();
-                state.is_paused = !state.is_paused;
-                println!(
-                    "Playback {}",
-                    if state.is_paused { "paused" } else { "resumed" }
-                );
+                toggle_playback(&state);
             }
             Ok(AudioCommand::VolumeChange(volume)) => {
-                let mut state = state.lock().unwrap();
-                state.volume = volume;
-                println!("Volume: {}", volume);
+                change_volume(&state, volume);
             }
             Ok(AudioCommand::Seek(position_seconds)) => {
-                println!("Seeking to: {}s", position_seconds);
-                if let Some(decoder_command_sender) = &decoder_command_sender {
-                    let state = state.lock().unwrap();
-                    let sample_rate = state.sample_rate;
-                    drop(state);
-
-                    let target_samples = (position_seconds * sample_rate as f64) as u64;
-
-                    let _ = decoder_command_sender.send(DecoderCommand::Seek(target_samples));
-                    println!(
-                        "Seeking to {:.2} seconds ({} samples)",
-                        position_seconds, target_samples
-                    );
-                }
+                seek(&state, &mut decoder_command_sender, position_seconds);
             }
             Err(_) => {
                 println!("Audio thread shutting down");
@@ -115,7 +92,7 @@ fn load_and_play(
     decoder_command_sender: &mut Option<Sender<DecoderCommand>>,
     stream: &mut Option<Stream>,
     path: &String,
-) -> bool {
+) -> () {
     println!("Loading: {}", path);
 
     // stop existing playback
@@ -129,10 +106,10 @@ fn load_and_play(
         let _ = decoder_command_sender.send(DecoderCommand::Stop);
     }
 
-    // Let old decoder finish in background - don't block!
+    // Let old decoder finish without blocking
     if let Some(handle) = decoder_handle.take() {
         thread::spawn(move || {
-            let _ = handle.join(); // Clean up in background
+            let _ = handle.join();
         });
     }
 
@@ -140,11 +117,11 @@ fn load_and_play(
     drop(stream.take());
 
     // Probe the file to get sample rate and format
-    let probe_result = match probe_audio_file_format(&path) {
+    let probe_result = match probe_audio_file(&path) {
         Ok(pr) => pr,
         Err(e) => {
             eprintln!("Failed to probe audio file: {}", e);
-            return true; // Skip this song, don't crash
+            return; // Skip this song, don't crash
         }
     };
 
@@ -155,7 +132,7 @@ fn load_and_play(
                 Some(sr) => sr,
                 None => {
                     eprintln!("No sample rate found in audio file");
-                    return true;
+                    return;
                 }
             };
             let ch = track.codec_params.channels.map(|c| c.count()).unwrap_or(2);
@@ -163,7 +140,7 @@ fn load_and_play(
         }
         None => {
             eprintln!("No default track found");
-            return true;
+            return;
         }
     };
 
@@ -177,14 +154,14 @@ fn load_and_play(
         Ok(stream) => stream,
         Err(e) => {
             eprintln!("Failed to create audio output: {}", e);
-            return false;
+            return;
         }
     };
 
     // start the stream
     if let Err(e) = new_stream.play() {
         eprintln!("Failed to start audio stream: {}", e);
-        return false;
+        return;
     }
 
     // keep stream from being dropped at end of loop
@@ -197,9 +174,8 @@ fn load_and_play(
 
     *decoder_command_sender = Some(new_decoder_command_sender);
 
-    // spawn new decoder thread with the probe result
+    // spawn new decoder thread
     let state_clone = state.clone();
-
     *decoder_handle = Some(thread::spawn(move || {
         if let Err(e) = decoder_thread(
             probe_result,
@@ -210,15 +186,14 @@ fn load_and_play(
             eprintln!("Decoder error: {}", e);
         }
     }));
-    true
 }
 
-pub fn probe_audio_file_format(path: &str) -> Result<ProbeResult, Error> {
+pub fn probe_audio_file(path: &str) -> Result<ProbeResult, Error> {
     // open the file
     let file = File::open(path)?;
     let mss = MediaSourceStream::new(Box::new(file), Default::default());
 
-    // create a hint for the probe (helps symphonia detect format)
+    // create a hint for the probe based on the file extension
     let mut hint = Hint::new();
     if let Some(ext) = Path::new(&path).extension() {
         if let Some(ext_str) = ext.to_str() {
@@ -234,4 +209,40 @@ pub fn probe_audio_file_format(path: &str) -> Result<ProbeResult, Error> {
         &MetadataOptions::default(),
     )?;
     Ok(probed)
+}
+
+fn toggle_playback(state: &Arc<Mutex<PlaybackState>>) {
+    let mut state = state.lock().unwrap();
+    state.is_paused = !state.is_paused;
+    println!(
+        "Playback {}",
+        if state.is_paused { "paused" } else { "resumed" }
+    );
+}
+
+fn change_volume(state: &Arc<Mutex<PlaybackState>>, volume: f32) {
+    let mut state = state.lock().unwrap();
+    state.volume = volume;
+    println!("Volume: {}", volume);
+}
+
+fn seek(
+    state: &Arc<Mutex<PlaybackState>>,
+    decoder_command_sender: &mut Option<Sender<DecoderCommand>>,
+    position_seconds: f64,
+) {
+    println!("Seeking to: {}s", position_seconds);
+    if let Some(decoder_command_sender) = &decoder_command_sender {
+        let state = state.lock().unwrap();
+        let sample_rate = state.sample_rate;
+        drop(state);
+
+        let target_samples = (position_seconds * sample_rate as f64) as u64;
+
+        let _ = decoder_command_sender.send(DecoderCommand::Seek(target_samples));
+        println!(
+            "Seeking to {:.2} seconds ({} samples)",
+            position_seconds, target_samples
+        );
+    }
 }
