@@ -10,6 +10,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
     "tauri": "tauri"
   },
   "license": "MIT",
@@ -17,7 +19,7 @@
     "@lucide/svelte": "^0.562.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-dialog": "^2.4.2",
+    "@tauri-apps/plugin-dialog": "^2.5.0",
     "@tauri-apps/plugin-opener": "^2",
     "lodash": "^4.17.21",
     "tailwindcss": "^4.1.18"
