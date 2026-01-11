@@ -1,6 +1,9 @@
 pub mod shared;
+pub mod player;
 
-pub mod audio_thread;
 mod cpal_stream;
 mod decoding;
 mod position_updater;
+mod seek;
+mod probe;
+mod load_and_play;

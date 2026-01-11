@@ -11,17 +11,15 @@ use symphonia::core::audio::SampleBuffer;
 use symphonia::core::codecs::{Decoder, DecoderOptions};
 use symphonia::core::errors::Error::IoError;
 use symphonia::core::formats::{FormatReader, SeekMode, SeekTo};
-use symphonia::core::probe::ProbeResult;
 use symphonia::core::units::Time;
 use symphonia::default::get_codecs;
 
 pub fn decoder_thread(
-    probe_result: ProbeResult,
+    mut format_reader: Box<dyn FormatReader>,
     mut producer: HeapProd<f32>,
     state: Arc<Mutex<PlaybackState>>,
     decoder_command_receiver: Receiver<DecoderCommand>,
 ) -> Result<(), Error> {
-    let mut format_reader = probe_result.format;
 
     let default_track = format_reader
         .default_track()
@@ -33,23 +31,17 @@ pub fn decoder_thread(
         .sample_rate
         .context("No sample rate found")?;
 
-    let duration_samples = default_track.codec_params.n_frames;
-
     // update state with track info
     {
         let mut state = state.lock().unwrap();
         state.sample_rate = sample_rate;
-        state.duration_samples = duration_samples;
         state.current_position_samples = 0;
         state.is_playing = true;
         state.is_paused = false;
         state.needs_buffer_clear = false;
     }
 
-    println!(
-        "Sample rate: {}, Duration: {:?} samples",
-        sample_rate, duration_samples
-    );
+    println!("Sample rate: {}", sample_rate);
 
     // create decoder
     let mut decoder = get_codecs().make(&default_track.codec_params, &DecoderOptions::default())?;

@@ -1,4 +1,4 @@
-pub enum AudioCommand {
+pub enum AudioPlayerCommand {
     LoadAndPlay(String), // path to audio file
     TogglePlayback,
     VolumeChange(f32), // volume between 0.0 and 1.0
@@ -11,11 +11,11 @@ pub enum DecoderCommand {
 }
 
 pub struct PlaybackState {
-    pub is_playing: bool,
-    pub is_paused: bool,
-    pub volume: f32,
+    pub is_playing: bool, // whether we have an audio file loaded
+    pub is_paused: bool,  // whether the current audio file is paused
+    pub volume: f32, // volume between 0.0 and 1.0
     pub current_position_samples: u64,
     pub sample_rate: u32,
-    pub duration_samples: Option<u64>,
     pub needs_buffer_clear: bool, // buffer needs to be cleared after seeking
 }
+
