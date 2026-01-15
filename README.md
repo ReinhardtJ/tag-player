@@ -1,7 +1,26 @@
-# Tauri + SvelteKit + TypeScript
+# TagPlayer
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+A desktop music player with tag viewing/editing capabilities built with Tauri and SvelteKit.
 
-## Recommended IDE Setup
+![img.png](docs/img.png)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+## Features
+- Recursive music file discovery
+- Native audio playback
+- Search by title, artist, genre, and other tags
+- Edit music tags
+
+## Development
+
+```bash
+# Start development server with hot reload
+npm run tauri dev
+
+# Lint frontend
+npm run check
+
+# Backend commands (from src-tauri/)
+cargo check    # Lint backend
+cargo build    # Build debug binary
+cargo test     # Run tests
+```
