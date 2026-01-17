@@ -11,7 +11,7 @@ use crate::read_music_library::{read_music_library, Library};
 use crate::tags::writing_tags::write_tags_to_file;
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 use std::thread;
 use tauri::{Manager, State};
 
@@ -72,10 +72,10 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let (sender, receiver) = mpsc::channel();
-            let app_handle = app.handle().clone();
+            let event_emitter = Arc::new(app.handle().clone());
 
-            // spawn audio thread with app handle for event emission
-            thread::spawn(move || player_thread(receiver, app_handle));
+            // spawn player thread with app handle for event emission
+            thread::spawn(move || player_thread(receiver, event_emitter));
 
             app.manage(AudioPlayer { sender });
             Ok(())

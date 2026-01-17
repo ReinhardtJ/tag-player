@@ -14,20 +14,16 @@ impl EventEmitter for AppHandle {
     }
 }
 
-pub trait PositionUpdater {
-    fn new(event_emitter: Arc<dyn EventEmitter + Send + Sync>) -> Self;
-    fn start_thread(&self, state: Arc<Mutex<PlaybackState>>);
+pub struct PositionUpdaterImpl<T: EventEmitter + Send + Sync> {
+    event_emitter: Arc<T>,
 }
 
-pub struct PositionUpdaterImpl {
-    event_emitter: Arc<dyn EventEmitter + Send + Sync>,
-}
-impl PositionUpdater for PositionUpdaterImpl {
-    fn new(event_emitter: Arc<dyn EventEmitter + Send + Sync>) -> Self {
+impl<T: EventEmitter + Send + Sync + 'static> PositionUpdaterImpl<T> {
+    pub fn new(event_emitter: Arc<T>) -> Self {
         Self { event_emitter }
     }
 
-    fn start_thread(&self, state: Arc<Mutex<PlaybackState>>) {
+    pub fn start_thread(&self, state: Arc<Mutex<PlaybackState>>) {
         let event_emitter_clone = self.event_emitter.clone();
         thread::spawn(move || {
             position_updater_thread(state, event_emitter_clone);
@@ -35,17 +31,15 @@ impl PositionUpdater for PositionUpdaterImpl {
     }
 }
 
-pub fn position_updater_thread(
+pub fn position_updater_thread<T: EventEmitter + Send + Sync>(
     state: Arc<Mutex<PlaybackState>>,
-    event_emitter: Arc<dyn EventEmitter + Send + Sync>,
+    event_emitter: Arc<T>,
 ) {
     loop {
         if let Some(audio_position) = get_audio_position(state.clone()) {
-            // emit position event
             event_emitter.emit_position(audio_position);
         }
 
-        // update 25 times a second
         thread::sleep(Duration::from_millis(40));
     }
 }
