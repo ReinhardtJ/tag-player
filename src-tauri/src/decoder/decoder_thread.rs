@@ -1,4 +1,4 @@
-use crate::audio::shared::{DecoderCommand, PlaybackState};
+use crate::player::shared::{PlaybackState};
 use anyhow::{Context, Error};
 use ringbuf::producer::Producer;
 use ringbuf::HeapProd;
@@ -13,8 +13,9 @@ use symphonia::core::errors::Error::IoError;
 use symphonia::core::formats::{FormatReader, SeekMode, SeekTo};
 use symphonia::core::units::Time;
 use symphonia::default::get_codecs;
+use crate::decoder::decoder_commands::DecoderCommand;
 
-pub fn decoder_thread(
+pub fn start_decoder_thread(
     mut format_reader: Box<dyn FormatReader>,
     mut producer: HeapProd<f32>,
     state: Arc<Mutex<PlaybackState>>,

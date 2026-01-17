@@ -1,5 +1,5 @@
 use std::path::Path;
-use tag_player_lib::music_library::*;
+use tag_player_lib::read_music_library::*;
 
 #[test]
 fn test_gather_music_library_non_existent_folder() {
@@ -21,7 +21,7 @@ fn test_gather_music_library_one_file_with_tags() {
     assert_eq!(library.errors.len(), 0);
     if let Some(song) = library.songs.first() {
         assert_eq!(song.name, "some_song.mp3");
-        assert_eq!(song.tags.track_number, Some(1));
+        assert_eq!(song.tags.get("TrackNumber"), Some(&"1".to_string()));
     } else {
     }
 }

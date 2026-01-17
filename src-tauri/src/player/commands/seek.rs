@@ -1,6 +1,7 @@
-use crate::audio::shared::{DecoderCommand, PlaybackState};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
+use crate::player::shared::PlaybackState;
+use crate::decoder::decoder_commands::DecoderCommand;
 
 pub fn seek(
     state: &Arc<Mutex<PlaybackState>>,

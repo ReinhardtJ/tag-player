@@ -1,7 +1,6 @@
-use crate::audio::cpal_stream::create_audio_stream;
-use crate::audio::decoding::decoder_thread;
-use crate::audio::probe::probe_audio_file;
-use crate::audio::shared::{DecoderCommand, PlaybackState};
+use crate::audio::audio_thread::start_cpal_audio_stream;
+use crate::player::probe::probe_audio_file;
+use crate::player::shared::{PlaybackState};
 use cpal::traits::StreamTrait;
 use cpal::Stream;
 use ringbuf::traits::Split;
@@ -10,6 +9,8 @@ use std::sync::mpsc::{channel, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
+use crate::decoder::decoder_commands::DecoderCommand;
+use crate::decoder::decoder_thread::start_decoder_thread;
 
 pub fn load_and_play(
     state: &Arc<Mutex<PlaybackState>>,
@@ -80,7 +81,7 @@ pub fn load_and_play(
     let (producer, consumer) = sample_buffer.split();
 
     // create audio output stream with the correct sample rate and channels
-    let new_stream = match create_audio_stream(state.clone(), consumer, sample_rate, channels) {
+    let new_stream = match start_cpal_audio_stream(state.clone(), consumer, sample_rate, channels) {
         Ok(stream) => stream,
         Err(e) => {
             eprintln!("Failed to create audio output: {}", e);
@@ -107,7 +108,7 @@ pub fn load_and_play(
     // spawn new decoder thread
     let state_clone = state.clone();
     *decoder_handle = Some(thread::spawn(move || {
-        if let Err(e) = decoder_thread(
+        if let Err(e) = start_decoder_thread(
             format_reader,
             producer,
             state_clone,

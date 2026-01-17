@@ -1,10 +1,15 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod player;
+pub mod read_music_library;
+mod tags;
+mod decoder;
 mod audio;
-pub mod music_library;
 
-use crate::audio::player::player_thread;
-use crate::audio::shared::AudioPlayerCommand;
-use crate::music_library::{read_music_library, write_tags_to_file, Library, Tags};
+use crate::player::shared::AudioPlayerCommand;
+use crate::player::threads::player_thread::player_thread;
+use crate::read_music_library::{read_music_library, Library};
+use crate::tags::writing_tags::write_tags_to_file;
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
@@ -55,7 +60,7 @@ fn seek(position_millis: u32, state: State<AudioPlayer>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn write_tags(path: String, tags: Tags) -> Result<(), String> {
+fn write_tags(path: String, tags: HashMap<String, String>) -> Result<(), String> {
     write_tags_to_file(Path::new(&path), &tags).map_err(|e| e.to_string())?;
     Ok(())
 }

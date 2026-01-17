@@ -5,10 +5,6 @@ pub enum AudioPlayerCommand {
     Seek(f64),         // position in seconds
 }
 
-pub enum DecoderCommand {
-    Seek(u64), // seek to sample position
-    Stop,
-}
 
 pub struct PlaybackState {
     pub is_playing: bool, // whether we have an audio file loaded

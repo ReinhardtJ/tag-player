@@ -1,4 +1,4 @@
-use crate::audio::shared::PlaybackState;
+use crate::player::shared::PlaybackState;
 use anyhow::{anyhow, Context, Error};
 use cpal::traits::{DeviceTrait, HostTrait};
 use cpal::{
@@ -9,9 +9,9 @@ use ringbuf::consumer::Consumer;
 use ringbuf::HeapCons;
 use std::sync::{Arc, Mutex};
 
-pub fn create_audio_stream(
+pub fn start_cpal_audio_stream(
     state: Arc<Mutex<PlaybackState>>,
-    consumer: HeapCons<f32>,
+    sample_consumer: HeapCons<f32>,
     sample_rate: u32,
     channels: u16,
 ) -> Result<Stream, Error> {
@@ -30,13 +30,13 @@ pub fn create_audio_stream(
 
     let stream = match default_config.sample_format() {
         SampleFormat::F32 => {
-            build_specific_format_stream::<f32>(&device, &config, state, consumer)?
+            build_specific_format_stream::<f32>(&device, &config, state, sample_consumer)?
         }
         SampleFormat::I16 => {
-            build_specific_format_stream::<i16>(&device, &config, state, consumer)?
+            build_specific_format_stream::<i16>(&device, &config, state, sample_consumer)?
         }
         SampleFormat::U16 => {
-            build_specific_format_stream::<u16>(&device, &config, state, consumer)?
+            build_specific_format_stream::<u16>(&device, &config, state, sample_consumer)?
         }
         _ => return Err(anyhow!("Unsupported sample format")),
     };
@@ -59,17 +59,18 @@ fn build_specific_format_stream<T>(
     device: &Device,
     config: &StreamConfig,
     state: Arc<Mutex<PlaybackState>>,
-    mut consumer: HeapCons<f32>,
+    mut sample_consumer: HeapCons<f32>,
 ) -> Result<Stream, Error>
 where
     T: Sample + SizedSample + FromSample<f32>,
 {
     let channels = config.channels as usize;
 
+    // audio_callback is called whenever the audio hardware needs more data
     let stream = device.build_output_stream(
         config,
         move |data: &mut [T], oci: &OutputCallbackInfo| {
-            audio_callback(data, oci, &state, &mut consumer, channels)
+            audio_callback(data, oci, &state, &mut sample_consumer, channels)
         },
         |err| eprintln!("Audio stream error: {}", err),
         None,
@@ -82,7 +83,7 @@ fn audio_callback<T>(
     data: &mut [T],
     _: &OutputCallbackInfo,
     state: &Arc<Mutex<PlaybackState>>,
-    consumer: &mut HeapCons<f32>,
+    sample_consumer: &mut HeapCons<f32>,
     channels: usize,
 ) where
     T: Sample + SizedSample + FromSample<f32>,
@@ -105,7 +106,7 @@ fn audio_callback<T>(
     {
         let mut state = state.lock().unwrap();
         if state.needs_buffer_clear {
-            consumer.clear();
+            sample_consumer.clear();
             state.needs_buffer_clear = false;
             println!("cleared audio buffer after seek")
         }
@@ -113,7 +114,7 @@ fn audio_callback<T>(
 
     // read from ring buffer
     let mut temp_buffer = vec![0.0f32; data.len()];
-    let samples_read = consumer.pop_slice(&mut temp_buffer);
+    let samples_read = sample_consumer.pop_slice(&mut temp_buffer);
 
     // apply volume and convert to output format
     for (i, sample) in temp_buffer[..samples_read].iter().enumerate() {

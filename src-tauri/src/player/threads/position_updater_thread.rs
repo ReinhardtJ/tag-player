@@ -1,4 +1,4 @@
-use crate::audio::shared::PlaybackState;
+use crate::player::shared::PlaybackState;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;

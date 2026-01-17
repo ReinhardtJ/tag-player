@@ -1,0 +1,5 @@
+- [ ] Read all Tags
+  - [ ] Display custom tags as readonly
+- [ ] Add new supported Tags
+- [ ] Display Tag completeness
+  - [ ] Use a pre-determined set of tags first

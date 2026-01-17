@@ -1,12 +1,17 @@
-use crate::audio::load_and_play;
-use crate::audio::position_updater::{EventEmitter, PositionUpdater, PositionUpdaterImpl};
-use crate::audio::seek::seek;
-use crate::audio::shared::{AudioPlayerCommand, DecoderCommand, PlaybackState};
+use crate::player::commands::change_volume::change_volume;
+use crate::player::commands::load_and_play;
+use crate::player::commands::seek::seek;
+use crate::player::commands::toggle_playback::toggle_playback;
+use crate::player::shared::{AudioPlayerCommand, PlaybackState};
+use crate::player::threads::position_updater_thread::{
+    EventEmitter, PositionUpdater, PositionUpdaterImpl,
+};
 use cpal::Stream;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use tauri::AppHandle;
+use crate::decoder::decoder_commands::DecoderCommand;
 
 pub fn player_thread(receiver: Receiver<AudioPlayerCommand>, app_handle: AppHandle) {
     let state = Arc::new(Mutex::new(PlaybackState {
@@ -70,19 +75,4 @@ pub fn player_thread(receiver: Receiver<AudioPlayerCommand>, app_handle: AppHand
     if let Some(decoder_handle) = decoder_handle {
         let _ = decoder_handle.join();
     }
-}
-
-fn toggle_playback(state: &Arc<Mutex<PlaybackState>>) {
-    let mut state = state.lock().unwrap();
-    state.is_paused = !state.is_paused;
-    println!(
-        "Playback {}",
-        if state.is_paused { "paused" } else { "resumed" }
-    );
-}
-
-fn change_volume(state: &Arc<Mutex<PlaybackState>>, volume: f32) {
-    let mut state = state.lock().unwrap();
-    state.volume = volume;
-    println!("Volume: {}", volume);
 }
