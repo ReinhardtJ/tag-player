@@ -72,10 +72,10 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let (sender, receiver) = mpsc::channel();
-            let event_emitter = Arc::new(app.handle().clone());
+            let app_handle_arc = Arc::new(app.handle().clone());
 
             // spawn player thread with app handle for event emission
-            thread::spawn(move || player_thread(receiver, event_emitter));
+            thread::spawn(move || player_thread(receiver, app_handle_arc));
 
             app.manage(AudioPlayer { sender });
             Ok(())

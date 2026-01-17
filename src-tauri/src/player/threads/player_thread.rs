@@ -3,16 +3,17 @@ use crate::player::commands::load_and_play;
 use crate::player::commands::seek::seek;
 use crate::player::commands::toggle_playback::toggle_playback;
 use crate::player::shared::{AudioPlayerCommand, PlaybackState};
-use crate::player::threads::position_updater_thread::{EventEmitter, PositionUpdaterImpl};
 use cpal::Stream;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+use tauri::AppHandle;
 use crate::decoder::decoder_commands::DecoderCommand;
+use crate::player::threads::position_updater_thread::start_position_updater_thread;
 
-pub fn player_thread<T: EventEmitter + Send + Sync + 'static>(
+pub fn player_thread(
     receiver: Receiver<AudioPlayerCommand>,
-    event_emitter: Arc<T>,
+    app_handle: Arc<AppHandle>,
 ) {
     let state = Arc::new(Mutex::new(PlaybackState {
         is_playing: false,
@@ -25,8 +26,7 @@ pub fn player_thread<T: EventEmitter + Send + Sync + 'static>(
 
     // spawn position updater thread
     let state_clone = state.clone();
-    let position_updater = PositionUpdaterImpl::new(event_emitter);
-    position_updater.start_thread(state_clone);
+    start_position_updater_thread(state_clone, app_handle);
 
     let mut decoder_handle: Option<JoinHandle<_>> = None;
     let mut decoder_command_sender: Option<Sender<DecoderCommand>> = None;

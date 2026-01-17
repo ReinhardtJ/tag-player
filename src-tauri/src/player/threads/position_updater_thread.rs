@@ -4,42 +4,17 @@ use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 
-pub trait EventEmitter {
-    fn emit_position(&self, position: AudioPosition) -> ();
+pub fn start_position_updater_thread(state: Arc<Mutex<PlaybackState>>, app_handle: Arc<AppHandle>) {
+    thread::spawn(move || {
+        position_updater_thread(state, app_handle);
+    });
 }
 
-impl EventEmitter for AppHandle {
-    fn emit_position(&self, position: AudioPosition) -> () {
-        _ = self.emit("playback:position", position);
-    }
-}
-
-pub struct PositionUpdaterImpl<T: EventEmitter + Send + Sync> {
-    event_emitter: Arc<T>,
-}
-
-impl<T: EventEmitter + Send + Sync + 'static> PositionUpdaterImpl<T> {
-    pub fn new(event_emitter: Arc<T>) -> Self {
-        Self { event_emitter }
-    }
-
-    pub fn start_thread(&self, state: Arc<Mutex<PlaybackState>>) {
-        let event_emitter_clone = self.event_emitter.clone();
-        thread::spawn(move || {
-            position_updater_thread(state, event_emitter_clone);
-        });
-    }
-}
-
-pub fn position_updater_thread<T: EventEmitter + Send + Sync>(
-    state: Arc<Mutex<PlaybackState>>,
-    event_emitter: Arc<T>,
-) {
+pub fn position_updater_thread(state: Arc<Mutex<PlaybackState>>, app_handle: Arc<AppHandle>) {
     loop {
         if let Some(audio_position) = get_audio_position(state.clone()) {
-            event_emitter.emit_position(audio_position);
+            _ = app_handle.emit("playback:position", audio_position);
         }
-
         thread::sleep(Duration::from_millis(40));
     }
 }
