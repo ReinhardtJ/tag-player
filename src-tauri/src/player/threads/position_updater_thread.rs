@@ -63,7 +63,7 @@ mod test {
         assert_eq!(result.unwrap().position_seconds, 1f64)
     }
 
-    // test if the get_audio_position returns None if we are not playing
+    // test if get_audio_position returns None if we are not playing
     #[test]
     fn test_get_audio_position_while_not_playing() {
         let state = Arc::new(Mutex::new(PlaybackState {

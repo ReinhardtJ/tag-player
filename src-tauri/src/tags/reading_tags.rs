@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{Context, Result};
 use lofty::config::{ParseOptions, ParsingMode};
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::prelude::ItemKey;
@@ -12,7 +12,7 @@ pub struct AudioFileProperties {
     pub duration_millis: u32,
 }
 
-pub fn read_audio_file_properties(path: &Path) -> anyhow::Result<AudioFileProperties> {
+pub fn read_audio_file_properties(path: &Path) -> Result<AudioFileProperties> {
     let parse_options = ParseOptions::new().parsing_mode(ParsingMode::Relaxed);
 
     let tagged_file = Probe::open(path)?
@@ -77,5 +77,16 @@ mod tests {
         // Reading tags from a non-existent file should return appropriate IO error
         let result = read_audio_file_properties(Path::new("/nonexistent/file.mp3"));
         assert!(result.is_err());
+    }
+    
+    #[test]
+    fn test_read_tags_from_file_without_tags() {
+        // Reading tags from a file without tags should return empty tags HashMap
+        let result = read_audio_file_properties(Path::new("./tests/music_libraries/different_formats/some_song.wav"));
+        assert!(result.is_ok());
+        
+        let properties = result.unwrap();
+        assert!(properties.tags.is_empty(), "Expected empty tags for WAV file");
+        assert!(properties.duration_millis > 0, "Expected non-zero duration");
     }
 }

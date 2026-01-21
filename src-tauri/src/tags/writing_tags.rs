@@ -176,3 +176,19 @@ fn parse_item_key(s: &str) -> ItemKey {
         _ => ItemKey::Unknown(s.to_string()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_write_tag_to_nonexistent_file() {
+        // Writing tags to a non-existent file should return an error
+        let tags = HashMap::from([
+            ("TrackTitle".to_string(), "Test Title".to_string()),
+        ]);
+        let result = write_tags_to_file(Path::new("/nonexistent/path/file.mp3"), &tags);
+        assert!(result.is_err());
+    }
+}
