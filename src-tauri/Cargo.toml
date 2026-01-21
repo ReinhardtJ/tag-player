@@ -29,3 +29,7 @@ symphonia = { version = "0.5.5", features = ["mp3", "aac", "flac", "wav", "vorbi
 cpal = "0.17.0"
 ringbuf = "0.4.8"
 
+[dev-dependencies]
+tempfile = "3.24.0"
+
+
