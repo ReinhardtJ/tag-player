@@ -62,7 +62,7 @@
 
   .neo-slider::-webkit-slider-runnable-track {
     width: 100%;
-    height: 4px;
+    height: 8px;
     background: linear-gradient(
       to right,
       var(--color-purple-700) 0%,
@@ -70,7 +70,7 @@
       var(--color-neutral-700) var(--position-percent),
       var(--color-neutral-700) 100%
     );
-    border-radius: 2px;
+    border-radius: 8px;
   }
 
   .neo-slider::-webkit-slider-thumb {
@@ -89,7 +89,7 @@
       3px 3px 6px rgba(0, 0, 0, 0.5),
       -3px -3px 6px rgba(255, 255, 255, 0.1);
     cursor: grab;
-    margin-top: -7px;
+    margin-top: -5px;
   }
 
   .neo-slider::-webkit-slider-thumb:hover {

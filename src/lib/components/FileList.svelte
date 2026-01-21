@@ -1,5 +1,5 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
-  <div class="h-full overflow-auto p-2 custom-scrollbar">
+  <div class="h-full overflow-auto p-2 neo-scrollbar">
     {#each playerState.filteredSongs as song}
       <div>
         <button
@@ -19,29 +19,5 @@
 </script>
 
 <style>
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px !important;
-  }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent !important;
-    border-radius: 0 1.5rem 1.5rem 0;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      to bottom right,
-      var(--color-purple-700),
-      var(--color-violet-700)
-    ) !important;
-    border-radius: 12px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      to bottom right,
-      var(--color-purple-600),
-      var(--color-violet-600)
-    ) !important;
-  }
 </style>

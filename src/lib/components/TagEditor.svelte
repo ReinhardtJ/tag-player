@@ -1,18 +1,21 @@
 <div class="h-full gradient-border rounded-3xl p-2 flex flex-col">
   {#if tags !== undefined}
-    <div class="flex-1 overflow-auto">
+    <div class="flex-1 overflow-auto neo-scrollbar">
       <table class="w-full">
         <tbody>
-          {#each tagFields as field}
+          {#each editedTags as [editableTagKey, _] (editableTagKey)}
             <tr>
-              <td class="font-semibold pr-4 py-1">{field.label}</td>
+              <td class="font-semibold pr-4 py-1">{editableTagKey}</td>
               <td class="py-1">
                 <div
                   class="inset-shadow-sm inset-shadow-neutral-800 bg-gray-300 dark:bg-neutral-700 rounded-lg px-3 py-2"
                 >
                   <input
-                    type={field.type}
-                    bind:value={editedTags[field.key]}
+                    type="text"
+                    bind:value={
+                      () => editedTags.get(editableTagKey),
+                      (v) => updateTag(editableTagKey, v)
+                    }
                     class="bg-transparent outline-none w-full text-gray-900 dark:text-white"
                   />
                 </div>
@@ -57,53 +60,44 @@
 </div>
 
 <script lang="ts">
-  import { playerState, type Tags } from '$lib/stores/player.svelte'
+  import { playerState } from '$lib/stores/player.svelte'
   import { invoke } from '@tauri-apps/api/core'
   import { RotateCcw, Save } from '@lucide/svelte'
-  import { transform } from 'lodash'
+  import { SvelteMap } from 'svelte/reactivity'
+  import { onMount } from 'svelte'
 
   const song = $derived(playerState.currentSong)
   const tags = $derived(song?.tags)
 
-  const tagFields: { key: keyof Tags; label: string; type: 'text' | 'number' }[] = [
-    { key: 'title', label: 'Title', type: 'text' },
-    { key: 'artist', label: 'Artist', type: 'text' },
-    { key: 'album_artist', label: 'Album Artist', type: 'text' },
-    { key: 'album', label: 'Album', type: 'text' },
-    { key: 'date', label: 'Date', type: 'text' },
-    { key: 'genre', label: 'Genre', type: 'text' },
-    { key: 'mood', label: 'Mood', type: 'text' },
-    { key: 'track_number', label: 'Track Number', type: 'number' }
-  ]
-
-  let editedTags = $state<Record<string, string | number>>({})
+  let editedTags = $state<SvelteMap<string, string>>(new SvelteMap())
 
   let isSaving = $state(false)
   let saveMessage = $state('')
 
+  function updateTag(key: string, value: string | undefined) {
+    if (value) {
+      editedTags.set(key, value)
+    }
+  }
+
+  onMount(() => {
+    console.log(`loaded song ${song?.name} with tags ${JSON.stringify(tags)}`)
+    console.log(tags?.keys())
+  })
+
   // Update local state when song changes
   $effect(() => {
-    if (tags) {
-      resetTags()
-    }
+    console.log(`loaded song ${song?.name} with tags ${JSON.stringify(tags)}`)
+    resetTags()
   })
 
   function resetTags() {
     if (tags) {
-      editedTags = Object.fromEntries(tagFields.map((field) => [field.key, tags[field.key] ?? '']))
+      editedTags = new SvelteMap<string, string>(tags);
+    } else {
+      editedTags = new SvelteMap()
     }
   }
-
-  function toTags(editedTags: Record<string, string | number>): Tags {
-    return transform(
-      tagFields,
-      (result, field) => {
-        result[field.key] = editedTags[field.key] ?? null
-      },
-      {} as any
-    ) as Tags
-  }
-
   async function applyTags() {
     if (!song) return
 
@@ -111,16 +105,14 @@
     saveMessage = ''
 
     try {
-      const updatedTags = toTags(editedTags)
-
       await invoke('write_tags', {
         path: song.path,
-        tags: updatedTags
+        tags: editedTags
       })
 
       // Update the song's tags in playerState
       if (playerState.currentSong) {
-        playerState.currentSong.tags = updatedTags
+        playerState.currentSong.tags = editedTags
       }
 
       saveMessage = '✓ Tags saved successfully'

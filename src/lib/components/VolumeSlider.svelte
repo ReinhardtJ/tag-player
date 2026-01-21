@@ -14,8 +14,6 @@
 <script lang="ts">
   import { Volume2 } from '@lucide/svelte'
   import { playerState } from '$lib/stores/player.svelte'
-  import { onMount } from 'svelte'
-  import { listen } from '@tauri-apps/api/event'
 
   let volume = $state(50)
 

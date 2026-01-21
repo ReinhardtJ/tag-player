@@ -16,12 +16,40 @@ interface Song {
   path: string
   name: string
   duration_millis: number
-  tags: Tags
+  tags: Map<string, string>
 }
 
 interface Library {
   songs: Song[]
   errors: string[]
+}
+
+interface SongDto {
+  path: string
+  name: string
+  duration_millis: number
+  tags: Record<string, string>
+}
+
+interface LibraryDto {
+  songs: SongDto[]
+  errors: string[]
+}
+
+function dto_to_song(dto: SongDto): Song {
+  return {
+    path: dto.path,
+    name: dto.name,
+    duration_millis: dto.duration_millis,
+    tags: new Map<string, string>(Object.entries(dto.tags))
+  }
+}
+
+function dto_to_library(dto: LibraryDto): Library {
+  return {
+    songs: dto.songs.map(dto_to_song),
+    errors: dto.errors
+  }
 }
 
 class PlayerState {
@@ -58,11 +86,11 @@ class PlayerState {
   }
 
   async loadMusicLibrary(libraryPath: string) {
-    const library = (await invoke('get_music_library', { path: libraryPath })) as Library
+    const library = (await invoke('get_music_library', { path: libraryPath })) as LibraryDto
     for (const error of library.errors) {
       errorState.addError(error)
     }
-    this.library = library
+    this.library = dto_to_library(library)
   }
 
   async changeVolume(volumeFrom0To1: number) {
@@ -89,15 +117,16 @@ class PlayerState {
 function matchesSearch(song: Song, query: string): boolean {
   const searchTerm = query.toLowerCase().trim()
 
-  const searchableFields = [
-    song.name,
-    song.tags.title,
-    song.tags.artist,
-    song.tags.album_artist,
-    song.tags.album,
-    song.tags.genre,
-    song.tags.mood
-  ]
+  // const searchableFields = [
+  //   song.name,
+  //   song.tags.title,
+  //   song.tags.artist,
+  //   song.tags.album_artist,
+  //   song.tags.album,
+  //   song.tags.genre,
+  //   song.tags.mood
+  // ]
+  const searchableFields = song.tags.values().toArray();
 
   return searchableFields.some((field) => field?.toLowerCase().includes(searchTerm))
 }
