@@ -8,11 +8,9 @@
       >
         {#snippet children(tagField: TagField, index: number)}
           {@const isNavidrome = isNavidromeTag(tagField.tagName)}
-          <div class="grid grid-cols-[auto_1fr] gap-4">
+          <div class="grid grid-cols-[1fr_2fr] gap-4">
             <div
-              class="font-semibold py-1 flex items-center gap-2 {isNavidrome
-                ? 'text-purple-700 dark:text-purple-400'
-                : ''}"
+              class="flex items-center gap-2"
             >
               <button
                 onclick={() => addTagBelow(index)}
@@ -24,7 +22,9 @@
                 type="text"
                 bind:value={tagField.tagName}
                 oninput={(e) => renameTag(index, e.currentTarget.value)}
-                class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full text-gray-900 dark:text-white"
+                class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full {isNavidrome
+                  ? 'text-purple-700 dark:text-purple-400 dark:font-semibold'
+                  : ''}"
                 placeholder="Tag name"
               />
             </div>
@@ -179,7 +179,7 @@
   }
 
   function isNavidromeTag(tagName: string): boolean {
-    return navidromeTags.some((tag) => tag.toUpperCase() === tagName.toUpperCase())
+    return navidromeTags.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
   }
 
   function renameTag(index: number, newName: string) {
