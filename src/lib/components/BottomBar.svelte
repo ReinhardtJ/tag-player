@@ -1,20 +1,19 @@
 <div class="p-2 rounded-lg">
   <div class="pb-4">
-    <TrackPositionSlider/>
+    <TrackPositionSlider />
   </div>
   <div class="flex items-center justify-between">
     <!-- left: spacing -->
-    <div class="flex-1">
-    </div>
+    <div class="flex-1"></div>
 
     <!-- center: Play/Pause button -->
     <div class="flex-1 flex justify-center">
-      <PlayButton/>
+      <PlayButton />
     </div>
 
     <!-- right: Volume controls -->
     <div class="flex-1 flex justify-end">
-      <VolumeSlider/>
+      <VolumeSlider />
     </div>
   </div>
 </div>

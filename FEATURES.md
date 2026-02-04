@@ -1,5 +1,6 @@
-- [ ] Read all Tags
-  - [ ] Display custom tags as readonly
-- [ ] Add new supported Tags
+- [x] Read all Tags
+  - [x] Display custom tags as readonly
+- [ ] Allow adding arbitrary tags
+  - [ ] Use a select element with search to easily add non-arbitrary tags
 - [ ] Display Tag completeness
   - [ ] Use a pre-determined set of tags first

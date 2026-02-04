@@ -126,7 +126,7 @@ function matchesSearch(song: Song, query: string): boolean {
   //   song.tags.genre,
   //   song.tags.mood
   // ]
-  const searchableFields = song.tags.values().toArray();
+  const searchableFields = song.tags.values().toArray()
 
   return searchableFields.some((field) => field?.toLowerCase().includes(searchTerm))
 }

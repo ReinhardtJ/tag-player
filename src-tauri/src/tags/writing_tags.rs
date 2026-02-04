@@ -22,9 +22,10 @@ pub fn write_tags_to_file(path: &Path, tags: &HashMap<String, String>) -> Result
         }
     };
 
-    // Clear existing tags and set new ones
+    // Clear existing tags
     tag.clear();
 
+    // Set new tags
     for (tag_key, tag_value) in tags {
         let item_key = parse_item_key(tag_key);
         let tag_item = TagItem::new(item_key, ItemValue::Text(tag_value.clone()));

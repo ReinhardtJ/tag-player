@@ -1,8 +1,3 @@
-<script lang="ts">
-  import { ChevronLeft } from '@lucide/svelte'
-  import { errorState } from '$lib/stores/error.svelte'
-</script>
-
 <main class="h-screen p-2">
   <a
     href="/"
@@ -15,3 +10,8 @@
     {errorState.errors}
   </div>
 </main>
+
+<script lang="ts">
+  import { ChevronLeft } from '@lucide/svelte'
+  import { errorState } from '$lib/stores/error.svelte'
+</script>
