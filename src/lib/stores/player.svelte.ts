@@ -116,18 +116,7 @@ class PlayerState {
 
 function matchesSearch(song: Song, query: string): boolean {
   const searchTerm = query.toLowerCase().trim()
-
-  // const searchableFields = [
-  //   song.name,
-  //   song.tags.title,
-  //   song.tags.artist,
-  //   song.tags.album_artist,
-  //   song.tags.album,
-  //   song.tags.genre,
-  //   song.tags.mood
-  // ]
   const searchableFields = song.tags.values().toArray()
-
   return searchableFields.some((field) => field?.toLowerCase().includes(searchTerm))
 }
 

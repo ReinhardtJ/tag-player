@@ -1,17 +1,10 @@
 <div class="h-full gradient-border rounded-3xl p-2 flex flex-col">
   {#if tags !== undefined}
     <div class="flex-1 overflow-auto neo-scrollbar">
-      <DraggableList
-        items={tagFields}
-        onReorder={handleReorder}
-        keyFn={(field, index) => field.tagName + index}
-      >
+      <DraggableList items={tagFields} onReorder={handleReorder} keyFn={(field, index) => field.id}>
         {#snippet children(tagField: TagField, index: number)}
-          {@const isNavidrome = isNavidromeTag(tagField.tagName)}
           <div class="grid grid-cols-[1fr_2fr] gap-4">
-            <div
-              class="flex items-center gap-2"
-            >
+            <div class="flex items-center gap-2">
               <button
                 onclick={() => addTagBelow(index)}
                 class="hover:text-gray-400 dark:hover:text-gray-300 text-gray-600 dark:text-gray-400"
@@ -22,11 +15,19 @@
                 type="text"
                 bind:value={tagField.tagName}
                 oninput={(e) => renameTag(index, e.currentTarget.value)}
-                class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full {isNavidrome
+                list="supported-tags"
+                class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full
+                {isTagSupported(tagField.tagName)
                   ? 'text-purple-700 dark:text-purple-400 dark:font-semibold'
-                  : ''}"
+                  : ''}
+                "
                 placeholder="Tag name"
               />
+              <datalist id="supported-tags">
+                {#each supportedTagsList as tag}
+                  <option value={tag}>{tag}</option>
+                {/each}
+              </datalist>
             </div>
             <div class="py-1">
               <div
@@ -95,91 +96,30 @@
   const tags = $derived(song?.tags)
 
   interface TagField {
+    id: string // needed for draggable list
     tagName: string
     tagValue: string
   }
-
-  // Navidrome-relevant tags (highlighted)
-  const navidromeTags = [
-    'Title',
-    'TitleSort',
-    'Artist',
-    'ArtistSort',
-    'Artists',
-    'ArtistsSort',
-    'Arranger',
-    'Composer',
-    'ComposerSort',
-    'Lyricist',
-    'LyricistSort',
-    'Conductor',
-    'Director',
-    'DjMixer',
-    'Mixer',
-    'Engineer',
-    'Producer',
-    'Remixer',
-    'AlbumArtist',
-    'AlbumArtistSort',
-    'AlbumArtists',
-    'AlbumArtistsSort',
-    'Album',
-    'AlbumSort',
-    'AlbumVersion',
-    'Genre',
-    'Mood',
-    'FlagCompilation',
-    'TrackNumber',
-    'TrackTotal',
-    'DiscNumber',
-    'DiscTotal',
-    'DiscSubtitle',
-    'Bpm',
-    'Lyrics',
-    'Comment',
-    'OriginalDate',
-    'RecordingDate',
-    'ReleaseDate',
-    'CatalogNumber',
-    'MusicBrainz_ArtistId',
-    'MusicBrainz_RecordingId',
-    'MusicBrainz_TrackId',
-    'MusicBrainz_AlbumArtistId',
-    'MusicBrainz_AlbumId',
-    'MusicBrainz_ReleaseGroupId',
-    'MusicBrainz_ComposerId',
-    'MusicBrainz_LyricistId',
-    'MusicBrainz_DirectorId',
-    'MusicBrainz_ProducerId',
-    'MusicBrainz_EngineerId',
-    'MusicBrainz_MixerId',
-    'MusicBrainz_RemixerId',
-    'MusicBrainz_DjMixerId',
-    'MusicBrainz_ConductorId',
-    'MusicBrainz_ArrangerId',
-    'ReleaseType',
-    'ReplayGain_Album_Gain',
-    'ReplayGain_Album_Peak',
-    'ReplayGain_Track_Gain',
-    'ReplayGain_Track_Peak',
-    'R128_Album_Gain',
-    'R128_Track_Gain',
-    'Performer',
-    'MusicBrainz_PerformerId',
-    'ExplicitStatus'
-  ]
 
   let tagFields = $state<TagField[]>([])
 
   let isSaving = $state(false)
   let saveMessage = $state('')
+  let supportedTagsList = $state<string[]>([])
+
+  // Load supported tags on mount
+  $effect(() => {
+    invoke<string[]>('get_supported_tags').then((tags) => {
+      supportedTagsList = tags
+    })
+  })
+
+  function isTagSupported(tagName: string): boolean {
+    return supportedTagsList.includes(tagName)
+  }
 
   function removeTag(index: number) {
     tagFields.splice(index, 1)
-  }
-
-  function isNavidromeTag(tagName: string): boolean {
-    return navidromeTags.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
   }
 
   function renameTag(index: number, newName: string) {
@@ -202,73 +142,54 @@
 
     tagFields[index].tagName = trimmedName
 
-    // If renamed to a navidrome tag, reorder to match navidrome order
-    if (isNavidromeTag(trimmedName)) {
-      const navidromeIndex = navidromeTags.findIndex(
-        (t) => t.toUpperCase() === trimmedName.toUpperCase()
-      )
-      const tag = tagFields.splice(index, 1)[0]
-
-      // Find where to insert among navidrome tags
-      let insertPos = 0
-      for (let i = 0; i < tagFields.length; i++) {
-        if (isNavidromeTag(tagFields[i].tagName)) {
-          const currentIndex = navidromeTags.findIndex(
-            (t) => t.toUpperCase() === tagFields[i].tagName.toUpperCase()
-          )
-          if (currentIndex > navidromeIndex) break
-          insertPos = i + 1
-        } else {
-          break
-        }
-      }
-      tagFields.splice(insertPos, 0, tag)
-    }
+    // No automatic reordering - user can manually reorder tags
   }
 
   function addTagBelow(index: number) {
-    tagFields.splice(index + 1, 0, { tagName: '', tagValue: '' })
+    tagFields.splice(index + 1, 0, { id: crypto.randomUUID(), tagName: '', tagValue: '' })
   }
 
   function handleReorder(newItems: TagField[]) {
     tagFields = newItems
   }
 
+
+
   // Update local state when song changes
   $effect(() => {
     resetTags()
   })
 
-  function resetTags() {
+  async function resetTags() {
     if (!tags) {
       tagFields = []
       return
     }
 
-    const newTagFields: TagField[] = []
-
-    // First, add navidrome tags in order
-    for (const tagName of navidromeTags) {
-      const value = tags.get(tagName)
-      if (value !== undefined) {
-        newTagFields.push({
-          tagName,
-          tagValue: value || ''
-        })
-      }
+    // Wait for supported tags to be loaded
+    if (supportedTagsList.length === 0) {
+      return
     }
 
-    // Then add other tags
+    // Separate tags into supported and other
+    const supportedFields: TagField[] = []
+    const otherFields: TagField[] = []
+
     for (const [tagName, value] of tags.entries()) {
-      if (!newTagFields.some((f) => f.tagName === tagName)) {
-        newTagFields.push({
-          tagName,
-          tagValue: value || ''
-        })
+      const field = {
+        id: crypto.randomUUID(),
+        tagName,
+        tagValue: value || ''
+      }
+      if (isTagSupported(tagName)) {
+        supportedFields.push(field)
+      } else {
+        otherFields.push(field)
       }
     }
 
-    tagFields = newTagFields
+    // Combine: supported tags first, then others
+    tagFields = [...supportedFields, ...otherFields]
   }
 
   async function applyTags() {

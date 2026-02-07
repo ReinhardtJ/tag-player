@@ -5,10 +5,11 @@ mod tags;
 mod decoder;
 mod audio;
 
+
 use crate::player::shared::AudioPlayerCommand;
 use crate::player::threads::player_thread::player_thread;
 use crate::read_music_library::{read_music_library, Library};
-use crate::tags::writing_tags::write_tags_to_file;
+use crate::tags::writing_tags::{write_tags_to_file, get_supported_tags as get_supported_tags_list};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{mpsc, Arc};
@@ -65,6 +66,15 @@ fn write_tags(path: String, tags: HashMap<String, String>) -> Result<(), String>
     Ok(())
 }
 
+
+
+#[tauri::command]
+fn get_supported_tags() -> Vec<String> {
+    get_supported_tags_list()
+}
+
+
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -86,7 +96,8 @@ pub fn run() {
             get_music_library,
             volume_change,
             seek,
-            write_tags
+            write_tags,
+            get_supported_tags
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
