@@ -7,13 +7,13 @@
   </a>
   <h1 class="text-xl">Errors:</h1>
   <div class="text-red-400">
-    {errorState.errors}
+    {errorStore.errors}
   </div>
 </main>
 
 <script lang="ts">
-  import { useErrorState } from '$lib/stores/error.svelte'
+  import { useErrorStore } from '$lib/stores/errorStore.svelte'
   import { ChevronLeft } from '@lucide/svelte'
 
-  const errorState = useErrorState()
+  const errorStore = useErrorStore()
 </script>

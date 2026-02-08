@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sortTagFieldsByRelevance, type TagField } from './tagEditor.svelte.js'
+import { sortTagFieldsByRelevance, type TagField } from './tagEditorStore.svelte.js'
 
 describe('sortTagFieldsByRelevance', () => {
   it('descending: places priority tags before non-priority tags when sorting', () => {

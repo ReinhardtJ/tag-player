@@ -12,15 +12,15 @@
 </div>
 
 <script lang="ts">
-  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { Volume2 } from '@lucide/svelte'
 
-  const playerState = usePlayerState()
+  const playerStore = usePlayerStore()
 
   let volume = $state(5)
 
   async function onVolumeChange() {
-    await playerState.changeVolume(volume / 100)
+    await playerStore.changeVolume(volume / 100)
   }
 </script>
 

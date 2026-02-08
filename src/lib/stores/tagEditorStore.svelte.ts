@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { SvelteMap } from 'svelte/reactivity'
 import { partition, sortBy } from 'lodash'
-import { usePlayerState, type PlayerState } from './player.svelte'
+import { PlayerStore, usePlayerStore } from './playerStore.svelte'
 
 export interface TagField {
   id: string
@@ -9,7 +9,7 @@ export interface TagField {
   tagValue: string
 }
 
-export const PRIORITY_TAGS = [
+export const ESSENTIAL_TAGS = [
   'TrackTitle',
   'TrackArtist',
   'AlbumTitle',
@@ -40,7 +40,7 @@ export function sortTagFieldsByRelevance(
   return [...sortedPriorityFields, ...otherFields]
 }
 
-class TagEditorState {
+class TagEditorStore {
   tagFields = $state<TagField[]>([])
   isSaving = $state(false)
   saveMessage = $state('')
@@ -48,7 +48,7 @@ class TagEditorState {
   sortByOptions = ['relevance']
   sortBy = $state('relevance')
   sortAscending = $state(false)
-  private playerState: PlayerState
+  private playerStore: PlayerStore
 
   tagsNotYetUsed = $derived(
     this.supportedTagsList.filter(
@@ -56,8 +56,8 @@ class TagEditorState {
     )
   )
 
-  constructor(usePlayerState: () => PlayerState) {
-    this.playerState = usePlayerState()
+  constructor(usePlayerStore: () => PlayerStore) {
+    this.playerStore = usePlayerStore()
     $effect(() => {
       invoke<string[]>('get_supported_tags').then((tags) => {
         this.supportedTagsList = tags
@@ -67,7 +67,7 @@ class TagEditorState {
 
   sortedTagFields = $derived.by(() => {
     if (this.sortBy === 'relevance') {
-      return sortTagFieldsByRelevance(this.tagFields, PRIORITY_TAGS, this.sortAscending)
+      return sortTagFieldsByRelevance(this.tagFields, ESSENTIAL_TAGS, this.sortAscending)
     }
     return this.tagFields
   })
@@ -111,7 +111,7 @@ class TagEditorState {
   }
 
   resetTags() {
-    const tags = this.playerState.currentSong?.tags
+    const tags = this.playerStore.currentSong?.tags
     if (!tags) {
       this.tagFields = []
       return
@@ -141,7 +141,7 @@ class TagEditorState {
   }
 
   async applyTags() {
-    const song = this.playerState.currentSong
+    const song = this.playerStore.currentSong
     if (!song) return
 
     this.isSaving = true
@@ -159,8 +159,8 @@ class TagEditorState {
         tags: tagsMap
       })
 
-      if (this.playerState.currentSong) {
-        this.playerState.currentSong.tags = tagsMap
+      if (this.playerStore.currentSong) {
+        this.playerStore.currentSong.tags = tagsMap
       }
 
       this.saveMessage = '✓ Tags saved successfully'
@@ -175,4 +175,4 @@ class TagEditorState {
   }
 }
 
-export const useTagEditorState = () => new TagEditorState(usePlayerState)
+export const useTagEditorStore = () => new TagEditorStore(usePlayerStore)

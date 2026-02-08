@@ -2,11 +2,11 @@
   <OpenFolderButton />
   <SearchBar />
   <div class="flex">
-    {#if errorState.errors.length > 0}
+    {#if errorStore.errors.length > 0}
       <a
         href="/error"
         class="mr-2 neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
-        >Errors ({errorState.errors.length})</a
+        >Errors ({errorStore.errors.length})</a
       >
     {/if}
     <ThemeToggle />
@@ -14,10 +14,10 @@
 </div>
 
 <script lang="ts">
-  import { useErrorState } from '$lib/stores/error.svelte'
+  import { useErrorStore } from '$lib/stores/errorStore.svelte'
   import OpenFolderButton from './OpenFolderButton.svelte'
   import SearchBar from './SearchBar.svelte'
   import ThemeToggle from './ThemeToggle.svelte'
 
-  const errorState = useErrorState()
+  const errorStore = useErrorStore()
 </script>

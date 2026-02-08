@@ -1,15 +1,15 @@
 <div class="h-full gradient-border rounded-3xl p-2 pt-4 flex flex-col">
   {#if tags !== undefined}
     <SortByToolbar
-      bind:sortAscending={tagEditorState.sortAscending}
-      bind:sortBy={tagEditorState.sortBy}
-      sortOptions={tagEditorState.sortByOptions}
+      bind:sortAscending={tagEditorStore.sortAscending}
+      bind:sortBy={tagEditorStore.sortBy}
+      sortOptions={tagEditorStore.sortByOptions}
     ></SortByToolbar>
 
     <!-- Tag List -->
     <div class="flex-1 overflow-auto neo-scrollbar">
-      {#each tagEditorState.sortedTagFields as tagField, index}
-        <TagEditorItem {tagField} {index} {tagEditorState} />
+      {#each tagEditorStore.sortedTagFields as tagField, index}
+        <TagEditorItem {tagField} {index} tagEditorState={tagEditorStore} />
       {/each}
     </div>
 
@@ -17,15 +17,15 @@
       <div class="flex gap-2 justify-end">
         <!-- Reset Button  -->
         <button
-          onclick={() => tagEditorState.resetTags()}
+          onclick={() => tagEditorStore.resetTags()}
           class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
         >
           <RotateCcw size={20} />
         </button>
         <!-- Save Button  -->
         <button
-          onclick={() => tagEditorState.applyTags()}
-          disabled={tagEditorState.isSaving}
+          onclick={() => tagEditorStore.applyTags()}
+          disabled={tagEditorStore.isSaving}
           class="neo-raised-sm p-2 rounded-lg transition-all
                  bg-linear-to-r from-purple-700 to-violet-700 hover:from-purple-600 hover:to-violet-600
                  text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -34,13 +34,13 @@
         </button>
       </div>
 
-      {#if tagEditorState.saveMessage}
+      {#if tagEditorStore.saveMessage}
         <div
           class="text-center text-sm"
-          class:text-green-600={tagEditorState.saveMessage.startsWith('✓')}
-          class:text-red-600={tagEditorState.saveMessage.startsWith('Error')}
+          class:text-green-600={tagEditorStore.saveMessage.startsWith('✓')}
+          class:text-red-600={tagEditorStore.saveMessage.startsWith('Error')}
         >
-          {tagEditorState.saveMessage}
+          {tagEditorStore.saveMessage}
         </div>
       {/if}
     </div>
@@ -48,19 +48,19 @@
 </div>
 
 <script lang="ts">
-  import { useTagEditorState } from '$lib/stores/tagEditor.svelte'
   import { RotateCcw, Save } from '@lucide/svelte'
   import TagEditorItem from './TagEditorItem.svelte'
   import SortByToolbar from './SortByToolbar.svelte'
-  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
+  import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
 
-  const playerState = usePlayerState()
-  const song = $derived(playerState.currentSong)
+  const playerStore = usePlayerStore()
+  const song = $derived(playerStore.currentSong)
   const tags = $derived(song?.tags)
-  const tagEditorState = useTagEditorState()
+  const tagEditorStore = useTagEditorStore()
 
   // Update local state when song changes
   $effect(() => {
-    tagEditorState.resetTags()
+    tagEditorStore.resetTags()
   })
 </script>

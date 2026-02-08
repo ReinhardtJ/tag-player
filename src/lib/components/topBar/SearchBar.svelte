@@ -5,15 +5,15 @@
   <Search size={20} class="text-gray-600 dark:text-neutral-300" />
   <input
     type="text"
-    bind:value={playerState.searchQuery}
+    bind:value={playerStore.searchQuery}
     placeholder="Search songs..."
     class="bg-transparent outline-none flex-1 text-gray-900 dark:text-white placeholder-neutral-600 dark:placeholder-neutral-400"
   />
 </div>
 
 <script lang="ts">
-  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { Search } from '@lucide/svelte'
 
-  const playerState = usePlayerState()
+  const playerStore = usePlayerStore()
 </script>

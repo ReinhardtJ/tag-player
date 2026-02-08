@@ -13,14 +13,14 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-dialog'
   import { FolderOpen } from '@lucide/svelte'
-  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
 
-  const playerState = usePlayerState()
+  const playerStore = usePlayerStore()
 
   async function selectFolder() {
     const selectedFolder = await open({ directory: true })
     if (!!selectedFolder) {
-      await playerState.loadMusicLibrary(selectedFolder)
+      await playerStore.loadMusicLibrary(selectedFolder)
     }
   }
 </script>

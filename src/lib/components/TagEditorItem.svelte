@@ -12,7 +12,7 @@
       oninput={(e) => tagEditorState.renameTag(index, e.currentTarget.value)}
       list="supported-tags"
       class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full
-      {isPriorityTag(tagField.tagName)
+      {isEssentialTag(tagField.tagName)
         ? 'text-yellow-600 dark:text-yellow-400 dark:font-semibold'
         : tagEditorState.isTagSupported(tagField.tagName)
           ? 'text-purple-700 dark:text-purple-400 dark:font-semibold'
@@ -48,7 +48,7 @@
 
 <script lang="ts">
   import { Plus, Trash } from '@lucide/svelte'
-  import { PRIORITY_TAGS, type TagField } from '$lib/stores/tagEditor.svelte'
+  import { ESSENTIAL_TAGS, type TagField } from '$lib/stores/tagEditorStore.svelte'
 
   interface Props {
     tagField: TagField
@@ -58,7 +58,7 @@
 
   let { tagField, index, tagEditorState }: Props = $props()
 
-  function isPriorityTag(tagName: string): boolean {
-    return PRIORITY_TAGS.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
+  function isEssentialTag(tagName: string): boolean {
+    return ESSENTIAL_TAGS.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
   }
 </script>

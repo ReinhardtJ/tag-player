@@ -1,21 +1,21 @@
-{#if playerState.currentSong}
+{#if playerStore.currentSong}
   <div class="flex items-center gap-3">
     <span class="text-sm text-neutral-400 dark:text-neutral-500 font-mono tabular-nums">
-      {formatTime(playerState.positionMillis)} / {formatTime(
-        playerState.currentSong.duration_millis
+      {formatTime(playerStore.positionMillis)} / {formatTime(
+        playerStore.currentSong.duration_millis
       )}
     </span>
     <input
       type="range"
       min="0"
-      max={playerState.currentSong.duration_millis}
-      bind:value={playerState.positionMillis}
-      onchange={() => playerState.seek()}
+      max={playerStore.currentSong.duration_millis}
+      bind:value={playerStore.positionMillis}
+      onchange={() => playerStore.seek()}
       onpointerdown={() => (isDragging = true)}
       onpointerup={() => (isDragging = false)}
       class="flex-1 neo-slider"
-      style="--position-percent: {(playerState.positionMillis /
-        playerState.currentSong.duration_millis) *
+      style="--position-percent: {(playerStore.positionMillis /
+        playerStore.currentSong.duration_millis) *
         100}%"
     />
   </div>
@@ -24,9 +24,9 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { listen } from '@tauri-apps/api/event'
-  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
 
-  const playerState = usePlayerState()
+  const playerStore = usePlayerStore()
 
   interface TrackPosition {
     position_seconds: number
@@ -36,8 +36,8 @@
 
   onMount(() => {
     const unlistenPromise = listen<TrackPosition>('playback:position', (event) => {
-      if (!isDragging && !playerState.isSeeking) {
-        playerState.positionMillis = Math.floor(event.payload.position_seconds * 1000)
+      if (!isDragging && !playerStore.isSeeking) {
+        playerStore.positionMillis = Math.floor(event.payload.position_seconds * 1000)
       }
     })
     return () => {

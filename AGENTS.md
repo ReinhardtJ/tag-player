@@ -68,7 +68,7 @@ npm run preview          # Preview production build (frontend only)
 - Functions: camelCase (`toggleDarkMode`, `selectFolder`)
 - Variables: camelCase (`isDarkMode`, `searchQuery`)
 - Interfaces: PascalCase (`Song`, `Tags`, `Library`)
-- Stores: camelCase (`playerState`, `errorState`)
+- Stores: camelCase (`playerStore`, `errorStore`)
 - Files: snake_case for utilities, PascalCase for components
 
 **Imports**:
@@ -126,7 +126,7 @@ npm run preview          # Preview production build (frontend only)
 - Use Svelte 5 runes for state management
 - Keep components focused and small
 - Use `$:` reactive statements for derived values
-- Place logic in separate `.svelte.ts` files when complex
+- Place logic in separate `.svelte.ts` files when complex (stores)
 
 **Styling**:
 - Tailwind CSS v4 utility classes
