@@ -1,7 +1,7 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
   <div class="h-full overflow-auto neo-scrollbar">
     {#if sortedSongs.length > 0}
-    <FileListToolbar bind:sortBy bind:sortAscending />
+        <FileListToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
     {/if}
     <div class="p-2">
       {#each sortedSongs as song}

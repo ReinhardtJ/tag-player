@@ -5,9 +5,11 @@
       bind:value={sortBy}
       class="bg-linear-to-br from-purple-700 to-violet-700/75 text-white rounded-lg px-3 py-1.5 h-8 focus:outline-none"
     >
-      <option value="name">Name</option>
-      <option value="tags">Tag Count</option>
+      {#each sortOptions as option}
+          <option value={option}>{toLabel(option)}</option>
+      {/each}
     </select>
+
     <button
       onclick={() => sortAscending = !sortAscending}
       class="bg-linear-to-br from-purple-700 to-violet-700/75 text-white rounded-lg px-2 py-1.5 w-8 h-8 hover:bg-neutral-700 focus:outline-none "
@@ -25,9 +27,14 @@
   import { ArrowUp, ArrowDown } from '@lucide/svelte'
 
   interface Props {
-    sortBy: 'name' | 'tags'
+    sortBy: string
     sortAscending: boolean
+    sortOptions: string[]
+  }
+  
+  function toLabel(option: string) {
+    return option.charAt(0).toUpperCase() + option.slice(1).toLowerCase()
   }
 
-  let { sortBy = $bindable(), sortAscending = $bindable() }: Props = $props()
+  let { sortBy = $bindable(), sortAscending = $bindable(), sortOptions }: Props = $props()
 </script>
