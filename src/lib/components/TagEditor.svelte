@@ -1,15 +1,17 @@
-<div class="h-full gradient-border rounded-3xl p-2 pt-4 flex flex-col">
+<div class="h-full gradient-border rounded-3xl flex flex-col">
   {#if tags !== undefined}
-    <SortByToolbar
-      bind:sortAscending={tagEditorStore.sortAscending}
-      bind:sortBy={tagEditorStore.sortBy}
-      sortOptions={tagEditorStore.sortByOptions}
-    ></SortByToolbar>
-
     <!-- Tag List -->
     <div class="flex-1 overflow-auto neo-scrollbar">
+      <div class="sticky top-2 m-2">
+        <SortByToolbar
+          bind:sortAscending={tagEditorStore.sortAscending}
+          bind:sortBy={tagEditorStore.sortBy}
+          sortOptions={tagEditorStore.sortByOptions}
+        ></SortByToolbar>
+      </div>
+
       {#each tagEditorStore.sortedTagFields as tagField, index}
-        <TagEditorItem {tagField} {index} tagEditorState={tagEditorStore} />
+        <TagEditorItem {tagField} {index} />
       {/each}
     </div>
 

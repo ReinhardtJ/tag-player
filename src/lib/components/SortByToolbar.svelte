@@ -1,5 +1,4 @@
-<div class="sticky top-2 flex justify-center m-2">
-  <div class="px-4 py-2 bg-neutral-800 rounded-3xl flex items-center gap-2 neo-raised-sm w-fit">
+  <div class="px-4 py-2 bg-neutral-800 rounded-2xl flex items-center gap-2 neo-raised-sm w-fit">
     <span>Sort by</span>
     <select
       bind:value={sortBy}
@@ -21,20 +20,21 @@
       {/if}
     </button>
   </div>
-</div>
 
 <script lang="ts">
   import { ArrowUp, ArrowDown } from '@lucide/svelte'
-
-  interface Props {
-    sortBy: string
-    sortAscending: boolean
-    sortOptions: string[]
-  }
 
   function toLabel(option: string) {
     return option.charAt(0).toUpperCase() + option.slice(1).toLowerCase()
   }
 
-  let { sortBy = $bindable(), sortAscending = $bindable(), sortOptions }: Props = $props()
+  let {
+    sortBy = $bindable(),
+    sortAscending = $bindable(),
+    sortOptions
+  }: {
+    sortBy: string
+    sortAscending: boolean
+    sortOptions: string[]
+  } = $props()
 </script>

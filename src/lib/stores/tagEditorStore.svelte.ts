@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { SvelteMap } from 'svelte/reactivity'
-import { partition, sortBy } from 'lodash'
+import { concat, partition, sortBy, without } from 'lodash'
 import { PlayerStore, usePlayerStore } from './playerStore.svelte'
 
 export interface TagField {
@@ -9,15 +9,7 @@ export interface TagField {
   tagValue: string
 }
 
-export const ESSENTIAL_TAGS = [
-  'TrackTitle',
-  'TrackArtist',
-  'AlbumTitle',
-  'AlbumArtist',
-  'RecordingDate',
-  'Genre',
-  'Mood'
-]
+
 
 export function sortTagFieldsByRelevance(
   tagFields: TagField[],
@@ -49,6 +41,15 @@ class TagEditorStore {
   sortBy = $state('relevance')
   sortAscending = $state(false)
   private playerStore: PlayerStore
+  private pinnedTags = $state([
+    'TrackTitle',
+    'TrackArtist',
+    'AlbumTitle',
+    'AlbumArtist',
+    'RecordingDate',
+    'Genre',
+    'Mood'
+  ])
 
   tagsNotYetUsed = $derived(
     this.supportedTagsList.filter(
@@ -65,9 +66,22 @@ class TagEditorStore {
     })
   }
 
+
+  isPinnedTag(tagName: string): boolean {
+    return this.pinnedTags.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
+  }
+
+  togglePin(tagName: string) {
+    if (this.isPinnedTag(tagName)) {
+      this.pinnedTags = without(this.pinnedTags, tagName)
+    } else {
+      this.pinnedTags = concat(this.pinnedTags, tagName)
+    }
+  }
+
   sortedTagFields = $derived.by(() => {
     if (this.sortBy === 'relevance') {
-      return sortTagFieldsByRelevance(this.tagFields, ESSENTIAL_TAGS, this.sortAscending)
+      return sortTagFieldsByRelevance(this.tagFields, this.pinnedTags, this.sortAscending)
     }
     return this.tagFields
   })
@@ -77,6 +91,7 @@ class TagEditorStore {
   }
 
   removeTag(index: number) {
+    console.log('removing tag at index', index)
     this.tagFields.splice(index, 1)
   }
 
@@ -91,11 +106,7 @@ class TagEditorStore {
       return
     }
 
-    if (
-      this.tagFields.some(
-        (f, i) => i !== index && f.tagName.toLowerCase() === trimmedName.toLowerCase()
-      )
-    ) {
+    if (this.tagFields.some((f, i) => i !== index && f.tagName.toLowerCase() === trimmedName.toLowerCase())) {
       return
     }
 
@@ -175,4 +186,11 @@ class TagEditorStore {
   }
 }
 
-export const useTagEditorStore = () => new TagEditorStore(usePlayerStore)
+let tagEditorStore: TagEditorStore | undefined = undefined;
+
+export function useTagEditorStore() {
+  if (tagEditorStore === undefined) {
+    tagEditorStore = new TagEditorStore(usePlayerStore)
+  }
+  return tagEditorStore
+}
