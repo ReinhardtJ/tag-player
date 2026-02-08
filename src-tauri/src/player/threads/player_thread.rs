@@ -18,7 +18,7 @@ pub fn player_thread(
     let state = Arc::new(Mutex::new(PlaybackState {
         is_playing: false,
         is_paused: false,
-        volume: 0.5,
+        volume: 0.05,
         current_position_samples: 0,
         sample_rate: 48000,
         needs_buffer_clear: false,

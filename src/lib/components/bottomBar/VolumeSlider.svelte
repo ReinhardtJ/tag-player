@@ -15,7 +15,7 @@
   import { Volume2 } from '@lucide/svelte'
   import { playerState } from '$lib/stores/player.svelte'
 
-  let volume = $state(50)
+  let volume = $state(5)
 
   async function onVolumeChange() {
     await playerState.changeVolume(volume / 100)
