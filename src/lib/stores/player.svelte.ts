@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { errorState } from '$lib/stores/error.svelte'
+import { useErrorState, type ErrorState } from './error.svelte'
 
 export interface Tags {
   title: string | null
@@ -12,7 +12,7 @@ export interface Tags {
   track_number: number | null
 }
 
-interface Song {
+export interface Song {
   path: string
   name: string
   duration_millis: number
@@ -52,7 +52,7 @@ function dto_to_library(dto: LibraryDto): Library {
   }
 }
 
-class PlayerState {
+export class PlayerState {
   library = $state<Library>({ songs: [], errors: [] })
   isPlaying = $derived(false)
   isLoaded = $state(false)
@@ -60,6 +60,12 @@ class PlayerState {
   searchQuery = $state('')
   positionMillis = $state(0)
   isSeeking = $state(false)
+
+  private errorState: ErrorState
+
+  constructor(useErrorState: () => ErrorState) {
+    this.errorState = useErrorState()
+  }
 
   filteredSongs = $derived(
     this.searchQuery.trim() === ''
@@ -88,7 +94,7 @@ class PlayerState {
   async loadMusicLibrary(libraryPath: string) {
     const library = (await invoke('get_music_library', { path: libraryPath })) as LibraryDto
     for (const error of library.errors) {
-      errorState.addError(error)
+      this.errorState.addError(error)
     }
     this.library = dto_to_library(library)
   }
@@ -101,7 +107,7 @@ class PlayerState {
     try {
       const result = await invoke('load_and_play', { path: song.path })
       if (result !== null) {
-        errorState.addError(String(result))
+        this.errorState.addError(String(result))
         return
       }
       this.reset()
@@ -109,7 +115,7 @@ class PlayerState {
       this.isPlaying = true
       this.currentSong = song
     } catch (e) {
-      errorState.addError(String(e))
+      this.errorState.addError(String(e))
     }
   }
 }
@@ -120,5 +126,11 @@ function matchesSearch(song: Song, query: string): boolean {
   return searchableFields.some((field) => field?.toLowerCase().includes(searchTerm))
 }
 
-export const playerState = new PlayerState()
-export type { Song }
+let playerState: PlayerState | undefined = undefined
+
+export function usePlayerState() {
+  if (playerState === undefined) {
+    playerState = new PlayerState(useErrorState)
+  }
+  return playerState
+}

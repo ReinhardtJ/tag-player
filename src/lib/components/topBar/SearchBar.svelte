@@ -12,6 +12,8 @@
 </div>
 
 <script lang="ts">
+  import { usePlayerState } from '$lib/stores/player.svelte'
   import { Search } from '@lucide/svelte'
-  import { playerState } from '$lib/stores/player.svelte'
+
+  const playerState = usePlayerState()
 </script>

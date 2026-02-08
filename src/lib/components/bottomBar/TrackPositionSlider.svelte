@@ -22,9 +22,11 @@
 {/if}
 
 <script lang="ts">
-  import { playerState } from '$lib/stores/player.svelte'
   import { onMount } from 'svelte'
   import { listen } from '@tauri-apps/api/event'
+  import { usePlayerState } from '$lib/stores/player.svelte'
+
+  const playerState = usePlayerState()
 
   interface TrackPosition {
     position_seconds: number

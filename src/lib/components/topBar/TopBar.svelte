@@ -14,8 +14,10 @@
 </div>
 
 <script lang="ts">
+  import { useErrorState } from '$lib/stores/error.svelte'
   import OpenFolderButton from './OpenFolderButton.svelte'
   import SearchBar from './SearchBar.svelte'
   import ThemeToggle from './ThemeToggle.svelte'
-  import { errorState } from '$lib/stores/error.svelte'
+
+  const errorState = useErrorState()
 </script>

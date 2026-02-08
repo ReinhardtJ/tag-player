@@ -1,16 +1,3 @@
-<script lang="ts">
-  import { Plus, Trash } from '@lucide/svelte'
-  import type { TagField } from '$lib/stores/tagEditor.svelte'
-
-  interface Props {
-    tagField: TagField
-    index: number
-    tagEditorState: any // Using any for now to avoid circular or complex imports if not needed, but we can type it better
-  }
-
-  let { tagField, index, tagEditorState }: Props = $props()
-</script>
-
 <div class="grid grid-cols-[1fr_2fr] gap-4">
   <div class="flex items-center gap-2">
     <button
@@ -25,9 +12,11 @@
       oninput={(e) => tagEditorState.renameTag(index, e.currentTarget.value)}
       list="supported-tags"
       class="inset-shadow-sm inset-shadow-neutral-800 dark:bg-neutral-700 rounded-lg px-3 py-2 flex gap-2 bg-transparent outline-none w-full
-      {tagEditorState.isTagSupported(tagField.tagName)
-        ? 'text-purple-700 dark:text-purple-400 dark:font-semibold'
-        : ''}
+      {isPriorityTag(tagField.tagName)
+        ? 'text-yellow-600 dark:text-yellow-400 dark:font-semibold'
+        : tagEditorState.isTagSupported(tagField.tagName)
+          ? 'text-purple-700 dark:text-purple-400 dark:font-semibold'
+          : ''}
       "
       placeholder="Tag name"
     />
@@ -36,7 +25,6 @@
         <option value={tag}>{tag}</option>
       {/each}
     </datalist>
-
   </div>
   <div class="py-1">
     <div
@@ -57,3 +45,20 @@
     </div>
   </div>
 </div>
+
+<script lang="ts">
+  import { Plus, Trash } from '@lucide/svelte'
+  import { PRIORITY_TAGS, type TagField } from '$lib/stores/tagEditor.svelte'
+
+  interface Props {
+    tagField: TagField
+    index: number
+    tagEditorState: any // Using any for now to avoid circular or complex imports if not needed, but we can type it better
+  }
+
+  let { tagField, index, tagEditorState }: Props = $props()
+
+  function isPriorityTag(tagName: string): boolean {
+    return PRIORITY_TAGS.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
+  }
+</script>

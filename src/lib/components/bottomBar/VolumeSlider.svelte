@@ -12,8 +12,10 @@
 </div>
 
 <script lang="ts">
+  import { usePlayerState } from '$lib/stores/player.svelte'
   import { Volume2 } from '@lucide/svelte'
-  import { playerState } from '$lib/stores/player.svelte'
+
+  const playerState = usePlayerState()
 
   let volume = $state(5)
 

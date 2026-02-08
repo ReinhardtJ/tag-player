@@ -12,6 +12,8 @@
 </main>
 
 <script lang="ts">
+  import { useErrorState } from '$lib/stores/error.svelte'
   import { ChevronLeft } from '@lucide/svelte'
-  import { errorState } from '$lib/stores/error.svelte'
+
+  const errorState = useErrorState()
 </script>

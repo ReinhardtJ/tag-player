@@ -118,6 +118,7 @@ npm run preview          # Preview production build (frontend only)
 - Audio thread: MPSC channel communication
 - File operations: `walkdir` for directory traversal
 - Tag reading: `lofty` crate with error handling
+- Use lodash instead of vanilla JS implementations when it makes the code more readable. Import lodash functions directly, not using the underscore syntax
 
 ### Svelte
 

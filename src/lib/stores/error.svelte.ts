@@ -1,4 +1,4 @@
-class ErrorState {
+export class ErrorState {
   private _errors = $state<string[]>([])
   get errors() {
     return this._errors
@@ -9,4 +9,10 @@ class ErrorState {
   }
 }
 
-export const errorState = new ErrorState()
+let errorState: ErrorState | undefined = undefined
+export function useErrorState() {
+  if (errorState === undefined) {
+    errorState = new ErrorState()
+  }
+  return errorState
+}

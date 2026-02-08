@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { SvelteMap } from 'svelte/reactivity'
-import { playerState } from './player.svelte'
+import { partition, sortBy } from 'lodash'
+import { usePlayerState, type PlayerState } from './player.svelte'
 
 export interface TagField {
   id: string
@@ -8,25 +9,68 @@ export interface TagField {
   tagValue: string
 }
 
+export const PRIORITY_TAGS = [
+  'TrackTitle',
+  'TrackArtist',
+  'AlbumTitle',
+  'AlbumArtist',
+  'RecordingDate',
+  'Genre',
+  'Mood'
+]
+
+export function sortTagFieldsByRelevance(
+  tagFields: TagField[],
+  priorityTags: string[],
+  sortAscending: boolean
+): TagField[] {
+  // Partition fields into priority and other
+  const [priorityFields, otherFields] = partition(tagFields, (field) =>
+    priorityTags.some((tag) => tag.toLowerCase() === field.tagName.toLowerCase())
+  )
+
+  // Sort priority fields by their order in priorityTags array
+  const sortedPriorityFields = sortBy(priorityFields, (field) =>
+    priorityTags.findIndex((tag) => tag.toLowerCase() === field.tagName.toLowerCase())
+  )
+
+  if (sortAscending) {
+    return [...otherFields, ...sortedPriorityFields.reverse()]
+  }
+  return [...sortedPriorityFields, ...otherFields]
+}
+
 class TagEditorState {
   tagFields = $state<TagField[]>([])
   isSaving = $state(false)
   saveMessage = $state('')
   supportedTagsList = $state<string[]>([])
+  sortByOptions = ['relevance']
+  sortBy = $state('relevance')
+  sortAscending = $state(false)
+  private playerState: PlayerState
 
   tagsNotYetUsed = $derived(
     this.supportedTagsList.filter(
-      (tag) => !this.tagFields.some((field) => field.tagName.toUpperCase() === tag.toUpperCase())
+      (tag) => !this.tagFields.some((field) => field.tagName.toLowerCase() === tag.toLowerCase())
     )
   )
 
-  constructor() {
+  constructor(usePlayerState: () => PlayerState) {
+    this.playerState = usePlayerState()
     $effect(() => {
       invoke<string[]>('get_supported_tags').then((tags) => {
         this.supportedTagsList = tags
       })
     })
   }
+
+  sortedTagFields = $derived.by(() => {
+    if (this.sortBy === 'relevance') {
+      return sortTagFieldsByRelevance(this.tagFields, PRIORITY_TAGS, this.sortAscending)
+    }
+    return this.tagFields
+  })
 
   isTagSupported(tagName: string): boolean {
     return this.supportedTagsList.includes(tagName)
@@ -47,10 +91,9 @@ class TagEditorState {
       return
     }
 
-    // Check if new name already exists
     if (
       this.tagFields.some(
-        (f, i) => i !== index && f.tagName.toUpperCase() === trimmedName.toUpperCase()
+        (f, i) => i !== index && f.tagName.toLowerCase() === trimmedName.toLowerCase()
       )
     ) {
       return
@@ -68,18 +111,16 @@ class TagEditorState {
   }
 
   resetTags() {
-    const tags = playerState.currentSong?.tags
+    const tags = this.playerState.currentSong?.tags
     if (!tags) {
       this.tagFields = []
       return
     }
 
-    // Wait for supported tags to be loaded
     if (this.supportedTagsList.length === 0) {
       return
     }
 
-    // Separate tags into supported and other
     const supportedFields: TagField[] = []
     const otherFields: TagField[] = []
 
@@ -96,12 +137,11 @@ class TagEditorState {
       }
     }
 
-    // Combine: supported tags first, then others
     this.tagFields = [...supportedFields, ...otherFields]
   }
 
   async applyTags() {
-    const song = playerState.currentSong
+    const song = this.playerState.currentSong
     if (!song) return
 
     this.isSaving = true
@@ -119,8 +159,8 @@ class TagEditorState {
         tags: tagsMap
       })
 
-      if (playerState.currentSong) {
-        playerState.currentSong.tags = tagsMap
+      if (this.playerState.currentSong) {
+        this.playerState.currentSong.tags = tagsMap
       }
 
       this.saveMessage = '✓ Tags saved successfully'
@@ -135,4 +175,4 @@ class TagEditorState {
   }
 }
 
-export const useTagEditorState = () => new TagEditorState()
+export const useTagEditorState = () => new TagEditorState(usePlayerState)

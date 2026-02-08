@@ -1,7 +1,7 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
   <div class="h-full overflow-auto neo-scrollbar">
     {#if sortedSongs.length > 0}
-        <FileListToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
+      <SortByToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
     {/if}
     <div class="p-2">
       {#each sortedSongs as song}
@@ -21,9 +21,11 @@
 </div>
 
 <script lang="ts">
-  import { playerState, type Song } from '$lib/stores/player.svelte'
   import { orderBy } from 'lodash'
-  import FileListToolbar from './FileListToolbar.svelte'
+  import SortByToolbar from '../SortByToolbar.svelte'
+  import { usePlayerState, type Song } from '$lib/stores/player.svelte'
+
+  const playerState = usePlayerState()
 
   let sortAscending = $state(true)
   let sortBy: 'name' | 'tags' = $state('name')
@@ -34,7 +36,7 @@
     if (sortBy === 'name') {
       return orderBy<Song>(songs, ['name'], [sortOrder])
     } else {
-      return orderBy<Song>(songs, [song => song.tags.size], [sortOrder])
+      return orderBy<Song>(songs, [(song) => song.tags.size], [sortOrder])
     }
   })
 </script>

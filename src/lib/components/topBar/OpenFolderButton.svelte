@@ -13,7 +13,9 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-dialog'
   import { FolderOpen } from '@lucide/svelte'
-  import { playerState } from '$lib/stores/player.svelte'
+  import { usePlayerState } from '$lib/stores/player.svelte'
+
+  const playerState = usePlayerState()
 
   async function selectFolder() {
     const selectedFolder = await open({ directory: true })

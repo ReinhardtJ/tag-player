@@ -1,10 +1,16 @@
 <div class="h-full gradient-border rounded-3xl p-2 pt-4 flex flex-col">
   {#if tags !== undefined}
+    <SortByToolbar
+      bind:sortAscending={tagEditorState.sortAscending}
+      bind:sortBy={tagEditorState.sortBy}
+      sortOptions={tagEditorState.sortByOptions}
+    ></SortByToolbar>
+
     <!-- Tag List -->
     <div class="flex-1 overflow-auto neo-scrollbar">
-        {#each tagEditorState.tagFields as tagField, index}
-          <TagEditorItem {tagField} {index} {tagEditorState} />
-        {/each}
+      {#each tagEditorState.sortedTagFields as tagField, index}
+        <TagEditorItem {tagField} {index} {tagEditorState} />
+      {/each}
     </div>
 
     <div class="mt-4 flex flex-col gap-2">
@@ -42,11 +48,13 @@
 </div>
 
 <script lang="ts">
-  import { playerState } from '$lib/stores/player.svelte'
   import { useTagEditorState } from '$lib/stores/tagEditor.svelte'
   import { RotateCcw, Save } from '@lucide/svelte'
   import TagEditorItem from './TagEditorItem.svelte'
+  import SortByToolbar from './SortByToolbar.svelte'
+  import { usePlayerState } from '$lib/stores/player.svelte'
 
+  const playerState = usePlayerState()
   const song = $derived(playerState.currentSong)
   const tags = $derived(song?.tags)
   const tagEditorState = useTagEditorState()

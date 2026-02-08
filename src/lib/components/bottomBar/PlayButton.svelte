@@ -12,8 +12,11 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core'
   import { Play, Pause } from '@lucide/svelte'
-  import { playerState } from '$lib/stores/player.svelte'
-  import { errorState } from '$lib/stores/error.svelte'
+  import { usePlayerState } from '$lib/stores/player.svelte'
+  import { useErrorState } from '$lib/stores/error.svelte'
+
+  const errorState = useErrorState()
+  const playerState = usePlayerState()
 
   async function togglePlayback() {
     const result = await invoke('toggle_playback')
