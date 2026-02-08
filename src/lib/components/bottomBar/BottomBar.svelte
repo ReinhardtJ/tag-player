@@ -19,7 +19,6 @@
 </div>
 
 <script lang="ts">
-  import { errorState } from '$lib/stores/error.svelte'
   import PlayButton from './PlayButton.svelte'
   import VolumeSlider from './VolumeSlider.svelte'
   import TrackPositionSlider from './TrackPositionSlider.svelte'

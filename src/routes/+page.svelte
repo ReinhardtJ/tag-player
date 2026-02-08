@@ -16,8 +16,8 @@
 </main>
 
 <script lang="ts">
-  import TopBar from '$lib/components/TopBar.svelte'
-  import FileList from '$lib/components/FileList.svelte'
+  import TopBar from '$lib/components/topBar/TopBar.svelte'
+  import FileList from '$lib/components/fileList/FileList.svelte'
   import TagEditor from '$lib/components/TagEditor.svelte'
-  import BottomBar from '$lib/components/BottomBar.svelte'
+  import BottomBar from '$lib/components/bottomBar/BottomBar.svelte'
 </script>
