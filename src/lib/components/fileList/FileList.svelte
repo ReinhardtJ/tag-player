@@ -1,8 +1,9 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
   <div class="h-full overflow-auto neo-scrollbar">
-    {#if sortedSongs.length > 0}
-      <div class="sticky top-2 m-2">
+    {#if playerStore.library.songs.length > 0}
+      <div class="sticky top-2 m-2 px-4 py-2 bg-neutral-800 rounded-3xl flex items-center neo-raised-sm w-fit gap-2">
         <SortByToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
+        <SearchBar></SearchBar>
       </div>
     {/if}
     <div class="p-2">
@@ -26,8 +27,10 @@
   import { orderBy } from 'lodash'
   import SortByToolbar from '../SortByToolbar.svelte'
   import { usePlayerStore, type Song } from '$lib/stores/playerStore.svelte'
+  import SearchBar from '../topBar/SearchBar.svelte'
 
   const playerStore = usePlayerStore()
+
 
   let sortAscending = $state(true)
   let sortBy: 'name' | 'tags' = $state('name')

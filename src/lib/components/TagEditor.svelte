@@ -2,7 +2,7 @@
   {#if tags !== undefined}
     <!-- Tag List -->
     <div class="flex-1 overflow-auto neo-scrollbar">
-      <div class="sticky top-2 m-2">
+      <div class="sticky top-2 m-2 px-4 py-2 bg-neutral-800 rounded-2xl flex items-center gap-2 neo-raised-sm w-fit">
         <SortByToolbar
           bind:sortAscending={tagEditorStore.sortAscending}
           bind:sortBy={tagEditorStore.sortBy}

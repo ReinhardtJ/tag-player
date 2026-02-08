@@ -1,6 +1,5 @@
 <div class="flex justify-between items-center p-2">
   <OpenFolderButton />
-  <SearchBar />
   <div class="flex">
     {#if errorStore.errors.length > 0}
       <a
