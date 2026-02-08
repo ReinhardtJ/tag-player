@@ -24,10 +24,11 @@
                 placeholder="Tag name"
               />
               <datalist id="supported-tags">
-                {#each supportedTagsList as tag}
+                {#each tagsNotYetUsed as tag}
                   <option value={tag}>{tag}</option>
                 {/each}
               </datalist>
+
             </div>
             <div class="py-1">
               <div
@@ -113,6 +114,8 @@
       supportedTagsList = tags
     })
   })
+  
+  const tagsNotYetUsed = $derived(supportedTagsList.filter(tag => !tagFields.some(field => field.tagName.toUpperCase() === tag.toUpperCase()))) 
 
   function isTagSupported(tagName: string): boolean {
     return supportedTagsList.includes(tagName)
