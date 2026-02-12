@@ -1,4 +1,4 @@
-<div class="flex items-center gap-2">
+<div class="shrink-0 flex items-center gap-2">
   <span>Sort by</span>
   <select
     bind:value={sortBy}

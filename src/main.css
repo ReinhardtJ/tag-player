@@ -14,145 +14,156 @@ html {
   background: linear-gradient(135deg, var(--color-neutral-800), var(--color-neutral-900));
 }
 
-.dark .gradient-border {
+@utility gradient-border {
   background:
     linear-gradient(var(--color-neutral-800), var(--color-neutral-800)) padding-box,
     linear-gradient(0deg, var(--color-neutral-800), var(--color-neutral-700)) border-box;
   border: 1px solid transparent;
 }
 
-.gradient-blur {
+@utility gradient-blur {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+
+  @variant dark {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
-.dark .gradient-blur {
-  backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.2);
-  border: 3px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Neomorphic Inset */
-.neo-inset-xs {
+@utility neo-inset-xs {
   box-shadow:
     inset 1px 1px 2px rgba(0, 0, 0, 0.3),
     inset -1px -1px 2px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      inset 1px 1px 3px rgba(0, 0, 0, 0.5),
+      inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-inset-sm {
+@utility neo-inset-sm {
   box-shadow:
     inset 2px 2px 4px rgba(0, 0, 0, 0.3),
     inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      inset 2px 2px 6px rgba(0, 0, 0, 0.5),
+      inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-inset {
+@utility neo-inset {
   box-shadow:
     inset 4px 4px 8px rgba(0, 0, 0, 0.3),
     inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      inset 4px 4px 12px rgba(0, 0, 0, 0.5),
+      inset -4px -4px 12px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-inset-lg {
+@utility neo-inset-lg {
   box-shadow:
     inset 6px 6px 12px rgba(0, 0, 0, 0.3),
     inset -6px -6px 12px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      inset 6px 6px 16px rgba(0, 0, 0, 0.5),
+      inset -6px -6px 16px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.dark .neo-inset-xs {
-  box-shadow:
-    inset 1px 1px 3px rgba(0, 0, 0, 0.5),
-    inset -1px -1px 3px rgba(255, 255, 255, 0.05);
-}
-
-.dark .neo-inset-sm {
-  box-shadow:
-    inset 2px 2px 6px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 6px rgba(255, 255, 255, 0.05);
-}
-
-.dark .neo-inset {
-  box-shadow:
-    inset 4px 4px 12px rgba(0, 0, 0, 0.5),
-    inset -4px -4px 12px rgba(255, 255, 255, 0.05);
-}
-
-.dark .neo-inset-lg {
-  box-shadow:
-    inset 6px 6px 16px rgba(0, 0, 0, 0.5),
-    inset -6px -6px 16px rgba(255, 255, 255, 0.05);
-}
-
-/* Neomorphic Raised */
-.neo-raised-xs {
+@utility neo-raised-xs {
   box-shadow:
     2px 2px 4px rgba(0, 0, 0, 0.2),
     -2px -2px 4px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      2px 2px 4px rgba(0, 0, 0, 0.4),
+      -2px -2px 4px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-raised-sm {
+@utility neo-raised-sm {
   box-shadow:
     3px 3px 6px rgba(0, 0, 0, 0.2),
     -3px -3px 6px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      4px 4px 8px rgba(0, 0, 0, 0.4),
+      -4px -4px 8px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-raised {
+@utility neo-raised {
   box-shadow:
-    6px 6px 12px rgba(0, 0, 0, 0.2),
-    -6px -6px 12px rgba(255, 255, 255, 0.1);
+    6px 6px 12px rgba(0, 0, 0, 0.15),
+    -6px -6px 12px rgba(255, 255, 255, 0.075);
+
+  @variant dark {
+    box-shadow:
+      8px 8px 16px rgba(0, 0, 0, 0.4),
+      -8px -8px 16px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.neo-raised-lg {
+@utility neo-raised-lg {
   box-shadow:
     10px 10px 20px rgba(0, 0, 0, 0.2),
     -10px -10px 20px rgba(255, 255, 255, 0.1);
+
+  @variant dark {
+    box-shadow:
+      12px 12px 24px rgba(0, 0, 0, 0.4),
+      -12px -12px 24px rgba(255, 255, 255, 0.05);
+  }
 }
 
-.dark .neo-raised-xs {
-  box-shadow:
-    2px 2px 4px rgba(0, 0, 0, 0.4),
-    -2px -2px 4px rgba(255, 255, 255, 0.05);
+@utility neo-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px !important;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent !important;
+    border-radius: 0 1.5rem 1.5rem 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      to bottom right,
+      var(--color-purple-700),
+      var(--color-violet-700)
+    ) !important;
+    border-radius: 12px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      to bottom right,
+      var(--color-purple-600),
+      var(--color-violet-600)
+    ) !important;
+  }
 }
 
-.dark .neo-raised-sm {
-  box-shadow:
-    4px 4px 8px rgba(0, 0, 0, 0.4),
-    -4px -4px 8px rgba(255, 255, 255, 0.05);
+@utility btn-primary {
+  @apply bg-linear-to-br from-purple-700 to-violet-700 rounded-lg p-1.5
+    hover:from-purple-600 hover:to-violet-600
+    neo-raised;
 }
 
-.dark .neo-raised {
-  box-shadow:
-    8px 8px 16px rgba(0, 0, 0, 0.4),
-    -8px -8px 16px rgba(255, 255, 255, 0.05);
-}
-
-.dark .neo-raised-lg {
-  box-shadow:
-    12px 12px 24px rgba(0, 0, 0, 0.4),
-    -12px -12px 24px rgba(255, 255, 255, 0.05);
-}
-
-.neo-scrollbar::-webkit-scrollbar {
-  width: 8px !important;
-}
-
-.neo-scrollbar::-webkit-scrollbar-track {
-  background: transparent !important;
-  border-radius: 0 1.5rem 1.5rem 0;
-}
-
-.neo-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom right,
-    var(--color-purple-700),
-    var(--color-violet-700)
-  ) !important;
-  border-radius: 12px;
-}
-
-.neo-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    to bottom right,
-    var(--color-purple-600),
-    var(--color-violet-600)
-  ) !important;
+@utility btn-secondary {
+  @apply rounded-lg p-1.5 neo-raised
+    bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600;
 }

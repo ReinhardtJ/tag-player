@@ -4,7 +4,7 @@
     {#if errorStore.errors.length > 0}
       <a
         href="/error"
-        class="mr-2 neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
+        class="mr-2 btn-secondary"
         >Errors ({errorStore.errors.length})</a
       >
     {/if}

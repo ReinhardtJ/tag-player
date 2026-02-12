@@ -1,7 +1,7 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
   <div class="h-full overflow-auto neo-scrollbar">
     {#if playerStore.library.songs.length > 0}
-      <div class="sticky top-2 m-2 px-4 py-2 bg-neutral-800 rounded-3xl flex items-center neo-raised-sm w-fit gap-2">
+      <div class="sticky flex items-center top-2 m-2 px-4 py-2 bg-neutral-800 rounded-2xl neo-raised-sm gap-2">
         <SortByToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
         <SearchBar></SearchBar>
       </div>

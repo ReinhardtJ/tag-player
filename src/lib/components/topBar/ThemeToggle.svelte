@@ -1,6 +1,6 @@
 <button
   onclick={toggleDarkMode}
-  class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
+  class="btn-secondary"
 >
   {#if isDarkMode}
     <Sun size={20} />

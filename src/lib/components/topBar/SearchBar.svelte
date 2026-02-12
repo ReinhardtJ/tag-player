@@ -1,8 +1,8 @@
 <div
-  class="flex inset-shadow-sm inset-shadow-neutral-800 items-center gap-2
- bg-gray-300 dark:bg-neutral-700 rounded-lg px-3 py-1.5 h-8 flex-1 max-w-md"
+  class="flex-1 min-w-48 flex inset-shadow-sm inset-shadow-neutral-800 items-center gap-2
+ bg-gray-300 dark:bg-neutral-700 rounded-lg px-3 py-1.5 h-8"
 >
-  <Search size={20} class="text-gray-600 dark:text-neutral-300" />
+  <Search size={20} class="text-gray-600 dark:text-neutral-300 shrink-0" />
   <input
     type="text"
     bind:value={playerStore.searchQuery}

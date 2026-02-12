@@ -1,12 +1,8 @@
 <button
   onclick={selectFolder}
-  class="
-      flex items-center gap-2
-      bg-linear-to-br from-purple-700 to-violet-700 rounded-lg p-2
-      hover:from-purple-600 hover:to-violet-600
-      neo-raised"
+  class="flex items-center gap-2 btn-primary"
 >
-  <FolderOpen size={20} />
+  <FolderOpen size={16} />
   <span>Open Folder</span>
 </button>
 
