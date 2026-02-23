@@ -1,6 +1,6 @@
 <main>
-  <div class="grid grid-cols-2 grid-rows-[auto_1fr_auto] h-screen gap-2">
-    <div class="col-span-2 mt-2 mx-2">
+  <div class="grid grid-cols-2 grid-rows-[auto_1fr_auto] h-screen gap-4">
+    <div class="col-span-2 mt-2 mx-4">
       <TopBar />
     </div>
     <div class="ml-2 h-full overflow-hidden">

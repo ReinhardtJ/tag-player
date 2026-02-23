@@ -71,11 +71,6 @@ npm run preview          # Preview production build (frontend only)
 - Stores: camelCase (`playerStore`, `errorStore`)
 - Files: snake_case for utilities, PascalCase for components
 
-**Imports**:
-- Group imports by source (framework, local, third-party)
-- Use named imports over default imports when possible
-- Sort imports alphabetically within groups
-
 **Types**:
 - Use TypeScript interfaces for data structures
 - Nullable fields use `Type | null`
@@ -118,7 +113,7 @@ npm run preview          # Preview production build (frontend only)
 - Audio thread: MPSC channel communication
 - File operations: `walkdir` for directory traversal
 - Tag reading: `lofty` crate with error handling
-- Use lodash instead of vanilla JS implementations when it makes the code more readable. Import lodash functions directly, not using the underscore syntax
+
 
 ### Svelte
 
@@ -127,6 +122,7 @@ npm run preview          # Preview production build (frontend only)
 - Keep components focused and small
 - Use `$:` reactive statements for derived values
 - Place logic in separate `.svelte.ts` files when complex (stores)
+- Use Svelte 5 bindings: `<input onblur={...}>` instead of `input on:blur={...}` etc.
 
 **Styling**:
 - Tailwind CSS v4 utility classes
@@ -139,6 +135,11 @@ npm run preview          # Preview production build (frontend only)
 - Stores in `src/lib/stores/`
 - Routes in `src/routes/`
 - Static assets in `static/`
+
+**Patterns**
+- Use lodash instead of vanilla JS implementations when working with data structures, if possible. 
+- Import lodash functions directly, not using the underscore syntax
+
 
 ## Testing Conventions
 

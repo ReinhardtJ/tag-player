@@ -1,40 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useErrorStore, type ErrorStore } from './errorStore.svelte'
-
-export interface Tags {
-  title: string | null
-  artist: string | null
-  album_artist: string | null
-  album: string | null
-  date: string | null
-  genre: string | null
-  mood: string | null
-  track_number: number | null
-}
-
-export interface Song {
-  path: string
-  name: string
-  duration_millis: number
-  tags: Map<string, string>
-}
-
-interface Library {
-  songs: Song[]
-  errors: string[]
-}
-
-interface SongDto {
-  path: string
-  name: string
-  duration_millis: number
-  tags: Record<string, string>
-}
-
-interface LibraryDto {
-  songs: SongDto[]
-  errors: string[]
-}
+import { type ErrorStore, useErrorStore } from './errorStore.svelte'
+import { type TagEditorStore, useTagEditorStore } from './tagEditorStore.svelte.ts'
+import type { Library, LibraryDto, Song, SongDto } from '$lib/stores/playerTypes.ts'
 
 function dto_to_song(dto: SongDto): Song {
   return {
@@ -61,10 +28,10 @@ export class PlayerStore {
   positionMillis = $state(0)
   isSeeking = $state(false)
 
-  private errorStore: ErrorStore
+  private errorStore: ErrorStore = useErrorStore()
+  private tagEditorStore: TagEditorStore = useTagEditorStore()
 
-  constructor(useErrorStore: () => ErrorStore) {
-    this.errorStore = useErrorStore()
+  constructor() {
   }
 
   filteredSongs = $derived(
@@ -114,6 +81,7 @@ export class PlayerStore {
       this.isLoaded = true
       this.isPlaying = true
       this.currentSong = song
+      this.tagEditorStore.setTags(song.tags)
     } catch (e) {
       this.errorStore.addError(String(e))
     }
@@ -130,7 +98,7 @@ let playerStore: PlayerStore | undefined = undefined
 
 export function usePlayerStore() {
   if (playerStore === undefined) {
-    playerStore = new PlayerStore(useErrorStore)
+    playerStore = new PlayerStore()
   }
   return playerStore
 }

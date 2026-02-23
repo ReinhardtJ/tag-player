@@ -1,13 +1,13 @@
 <div class="h-full gradient-border rounded-3xl overflow-hidden">
   <div class="h-full overflow-auto neo-scrollbar">
     {#if playerStore.library.songs.length > 0}
-      <div class="sticky flex items-center top-2 m-2 px-4 py-2 bg-neutral-800 rounded-2xl neo-raised-sm gap-2">
-        <SortByToolbar bind:sortBy bind:sortAscending sortOptions={['name', 'tags']} />
+      <div class="sticky flex items-center top-2 m-2 px-2 py-2 bg-neutral-800 rounded-2xl neo-raised-sm gap-2">
+        <SortByToolbar bind:sortBy bind:sortOrder sortOptions={['name', 'tags']} />
         <SearchBar></SearchBar>
       </div>
     {/if}
     <div class="p-2">
-      {#each sortedSongs as song}
+      {#each sortedSongs as song (song.path)}
         <div>
           <button
             onclick={() => playerStore.play(song)}
@@ -26,18 +26,19 @@
 <script lang="ts">
   import { orderBy } from 'lodash'
   import SortByToolbar from '../SortByToolbar.svelte'
-  import { usePlayerStore, type Song } from '$lib/stores/playerStore.svelte'
+  import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import SearchBar from '../topBar/SearchBar.svelte'
+  import type { Song } from '$lib/stores/playerTypes.ts'
+  import type { SortOrder } from '$lib/components/SortByToolbar.types.ts'
 
   const playerStore = usePlayerStore()
 
 
-  let sortAscending = $state(true)
+  let sortOrder = $state<SortOrder>('asc')
   let sortBy: 'name' | 'tags' = $state('name')
 
   const sortedSongs = $derived.by(() => {
     const songs = [...playerStore.filteredSongs]
-    const sortOrder = sortAscending ? 'asc' : 'desc'
     if (sortBy === 'name') {
       return orderBy<Song>(songs, ['name'], [sortOrder])
     } else {

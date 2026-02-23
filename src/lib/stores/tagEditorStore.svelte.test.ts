@@ -1,52 +1,64 @@
 import { describe, it, expect } from 'vitest'
-import { sortTagFieldsByRelevance, type TagField } from './tagEditorStore.svelte.js'
+import { matchesTagName, sortTagFieldsByRelevance, TagField } from './tagEditorStore.svelte.js'
+
+function createTagField(tagName: string): TagField {
+  return new TagField(tagName, `some value for tag ${tagName}`)
+}
+
+function buildRelevanceCallbackFromTagNames(tagNames: string[]){
+  return tagNames.map(tagName => (tf: TagField) => matchesTagName(tagName, tf))
+}
 
 describe('sortTagFieldsByRelevance', () => {
-  it('descending: places priority tags before non-priority tags when sorting', () => {
+  it('descending: sorts tag fields by relevance groups', () => {
     const fields: TagField[] = [
-      { id: '1', tagName: 'Prio2', tagValue: 'value1' },
-      { id: '2', tagName: 'Prio1', tagValue: 'value2' }
+      createTagField('Prio2'),
+      createTagField('OtherTag1'),
+      createTagField('Prio1'),
+      createTagField('Prio3'),
+      createTagField('OtherTag2'),
+      createTagField('Prio4')
     ]
 
-    const result = sortTagFieldsByRelevance(fields, ['Prio1', 'Prio2'], false)
+    const result = sortTagFieldsByRelevance(
+      fields,
+      buildRelevanceCallbackFromTagNames(['Prio1', 'Prio2', 'Prio3', 'Prio4']),
+      'desc'
+    )
 
-    expect(result.map((f) => f.tagName)).toEqual(['Prio1', 'Prio2'])
+    expect(result.map((f) => f.tagName).slice(0, 4)).toEqual(['Prio1', 'Prio2', 'Prio3', 'Prio4'])
   })
   
-  it('ascending: places non-priority before priority tags', () => {
+  it('ascending: sorts tag fields by relevance groups', () => {
     const fields: TagField[] = [
-      { id: '1', tagName: 'Prio2', tagValue: 'value1' },
-      { id: '2', tagName: 'Prio1', tagValue: 'value2' }
+      createTagField('Prio2'),
+      createTagField('OtherTag1'),
+      createTagField('Prio1'),
+      createTagField('Prio3'),
+      createTagField('OtherTag2'),
+      createTagField('Prio4')
     ]
 
-    const result = sortTagFieldsByRelevance(fields, ['Prio1', 'Prio2'], true)
+    const result = sortTagFieldsByRelevance(
+      fields,
+      buildRelevanceCallbackFromTagNames(['Prio1', 'Prio2', 'Prio3', 'Prio4']),
+      'asc'
+    )
 
-    expect(result.map((f) => f.tagName)).toEqual(['Prio2', 'Prio1'])
+
+    expect(result.map((f) => f.tagName).slice(2)).toEqual(['Prio4', 'Prio3', 'Prio2', 'Prio1'])
   })
 
-  it('descending: places priority tags before non-priority tags', () => {
-    const fields: TagField[] = [
-      { id: '1', tagName: 'Other1', tagValue: 'value1' },
-      { id: '2', tagName: 'Prio2', tagValue: 'value2' },
-      { id: '3', tagName: 'Other2', tagValue: 'value3' },
-      { id: '4', tagName: 'Prio1', tagValue: 'value4' }
-    ]
+  it('does not duplicate fields when tag name appears in multiple relevance groups', () => {
+    const fields: TagField[] = [createTagField('DuplicateTag')]
 
-    const result = sortTagFieldsByRelevance(fields, ['Prio1', 'Prio2'], false)
+    const result = sortTagFieldsByRelevance(
+      fields,
+      buildRelevanceCallbackFromTagNames(['DuplicateTag', 'DuplicateTag']),
+      'desc'
+    )
 
-    expect(result.map((f) => f.tagName)).toEqual(['Prio1', 'Prio2', 'Other1', 'Other2'])
-  })
-
-  it('ascending: places non-priority tags before priority tags', () => {
-    const fields: TagField[] = [
-      { id: '1', tagName: 'Other1', tagValue: 'value1' },
-      { id: '2', tagName: 'Prio2', tagValue: 'value2' },
-      { id: '3', tagName: 'Other2', tagValue: 'value3' },
-      { id: '4', tagName: 'Prio1', tagValue: 'value4' }
-    ]
-
-    const result = sortTagFieldsByRelevance(fields, ['Prio1', 'Prio2'], true)
-
-    expect(result.map((f) => f.tagName)).toEqual(['Other1', 'Other2', 'Prio2', 'Prio1'])
+    expect(result).toHaveLength(1)
+    expect(result[0].tagName).toBe('DuplicateTag')
   })
 })

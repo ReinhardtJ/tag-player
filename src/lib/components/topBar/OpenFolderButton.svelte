@@ -1,7 +1,4 @@
-<button
-  onclick={selectFolder}
-  class="flex items-center gap-2 btn-primary"
->
+<button onclick={selectFolder} class="flex items-center gap-2 btn-primary">
   <FolderOpen size={16} />
   <span>Open Folder</span>
 </button>
@@ -15,7 +12,7 @@
 
   async function selectFolder() {
     const selectedFolder = await open({ directory: true })
-    if (!!selectedFolder) {
+    if (selectedFolder) {
       await playerStore.loadMusicLibrary(selectedFolder)
     }
   }

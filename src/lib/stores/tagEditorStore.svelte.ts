@@ -1,178 +1,219 @@
 import { invoke } from '@tauri-apps/api/core'
-import { SvelteMap } from 'svelte/reactivity'
-import { concat, partition, sortBy, without } from 'lodash'
-import { PlayerStore, usePlayerStore } from './playerStore.svelte'
+import { SvelteMap, SvelteSet } from 'svelte/reactivity'
+import { type AddedTagStore, useAddedTagStore } from './addedTagStore.svelte.ts'
+import { type PinnedTagStore, usePinnedTagStore } from './pinnedTagStore.svelte.ts'
+import type { Song } from './playerTypes.ts'
+import type { SortOrder } from '$lib/components/SortByToolbar.types.ts'
+import { countBy, filter, find, findIndex, intersectionBy, keys, pickBy } from 'lodash'
 
-export interface TagField {
-  id: string
-  tagName: string
-  tagValue: string
+
+export enum TagStatus {
+  UNCHANGED,
+  EDITED,
+  ADDED,
+  REMOVED
 }
 
+export class TagField {
+  readonly id: string
+  tagName: string
+  tagValue: string
+  status: TagStatus
+  readonly originalName: string
+  readonly originalValue: string
+
+  constructor(tagName: string, tagValue: string) {
+    this.id = crypto.randomUUID()
+
+    this.status = $state(TagStatus.UNCHANGED)
+    this.tagName = $state(tagName)
+    this.tagValue = $state(tagValue)
+
+    this.originalName = tagName
+    this.originalValue = tagValue
+  }
+}
+
+export function matchesTagName(value: string, tagField: TagField) {
+  return value.trim().toLowerCase() === tagField.tagName.trim().toLowerCase()
+}
 
 
 export function sortTagFieldsByRelevance(
   tagFields: TagField[],
-  priorityTags: string[],
-  sortAscending: boolean
+  isRelevantCallbacks: ((tf: TagField) => boolean)[],
+  sortOrder: SortOrder
 ): TagField[] {
-  // Partition fields into priority and other
-  const [priorityFields, otherFields] = partition(tagFields, (field) =>
-    priorityTags.some((tag) => tag.toLowerCase() === field.tagName.toLowerCase())
-  )
 
-  // Sort priority fields by their order in priorityTags array
-  const sortedPriorityFields = sortBy(priorityFields, (field) =>
-    priorityTags.findIndex((tag) => tag.toLowerCase() === field.tagName.toLowerCase())
-  )
+  const relevantTagFields = []
+  const otherTagFields = new SvelteSet(tagFields)
 
-  if (sortAscending) {
-    return [...otherFields, ...sortedPriorityFields.reverse()]
+  for (const isRelevant of isRelevantCallbacks) {
+    const relevantTagField = find([...otherTagFields], isRelevant)
+    if (relevantTagField) {
+      relevantTagFields.push(relevantTagField)
+      otherTagFields.delete(relevantTagField)
+    }
   }
-  return [...sortedPriorityFields, ...otherFields]
+
+  if (sortOrder === 'desc') {
+    return [...relevantTagFields, ...otherTagFields]
+  }
+
+  return [...otherTagFields, ...relevantTagFields.reverse()]
 }
 
-class TagEditorStore {
-  tagFields = $state<TagField[]>([])
+export class TagEditorStore {
+  private tagFields = $state<TagField[]>([])
+
   isSaving = $state(false)
   saveMessage = $state('')
-  supportedTagsList = $state<string[]>([])
+
+  // which tags are supported as defined by the backend (see get_supported_tags() in lib.rs)
+  supportedTagNames = $state<string[]>([])
+
   sortByOptions = ['relevance']
   sortBy = $state('relevance')
-  sortAscending = $state(false)
-  private playerStore: PlayerStore
-  private pinnedTags = $state([
-    'TrackTitle',
-    'TrackArtist',
-    'AlbumTitle',
-    'AlbumArtist',
-    'RecordingDate',
-    'Genre',
-    'Mood'
-  ])
+  sortOrder = $state<SortOrder>('desc')
 
-  tagsNotYetUsed = $derived(
-    this.supportedTagsList.filter(
-      (tag) => !this.tagFields.some((field) => field.tagName.toLowerCase() === tag.toLowerCase())
+  private addedTagStore: AddedTagStore = useAddedTagStore()
+  private pinnedTagStore: PinnedTagStore = usePinnedTagStore()
+
+  sortedTagFields = $derived.by(() => {
+    // pinned tags are always displayed first
+    let isRelevantCallbacks = this.pinnedTagStore.pinnedTagNames.map(
+      (pinnedTagName) => (tf: TagField) => matchesTagName(pinnedTagName, tf)
     )
-  )
 
-  constructor(usePlayerStore: () => PlayerStore) {
-    this.playerStore = usePlayerStore()
+    if (this.sortBy === 'relevance') {
+      // we display supported tags before unsupported tags
+      isRelevantCallbacks = [
+        ...isRelevantCallbacks,
+        ...this.supportedTagNames.map(
+          (supportedTagName) => (tf: TagField) => matchesTagName(supportedTagName, tf)
+        )
+      ]
+
+      return sortTagFieldsByRelevance(
+        this.tagFields,
+        isRelevantCallbacks,
+        this.sortOrder,
+      )
+    }
+
+    return sortTagFieldsByRelevance(
+      this.tagFields,
+      isRelevantCallbacks,
+      this.sortOrder
+    )
+  })
+
+  constructor() {
     $effect(() => {
       invoke<string[]>('get_supported_tags').then((tags) => {
-        this.supportedTagsList = tags
+        this.supportedTagNames = tags
       })
     })
   }
 
+  renameTag(tagField: TagField, newName: string): string {
+    if (newName === tagField.originalName) {
+      tagField.status = TagStatus.UNCHANGED
+      return ''
+    }
 
-  isPinnedTag(tagName: string): boolean {
-    return this.pinnedTags.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
+    if (newName === tagField.tagName)
+      return ''
+
+    tagField.status = TagStatus.EDITED
+    newName = newName.trim()
+
+
+
+    const tagAlreadyExists = this.sortedTagFields.some(
+      (f) => f.id !== tagField.id && f.tagName.toLowerCase() === newName.toLowerCase()
+    )
+
+    if (tagAlreadyExists)
+      return 'Tag Name already Exists'
+
+
+    tagField.tagName = newName
+    if (!newName)
+      return 'Please Enter a Name'
+    return ''
   }
 
-  togglePin(tagName: string) {
-    if (this.isPinnedTag(tagName)) {
-      this.pinnedTags = without(this.pinnedTags, tagName)
-    } else {
-      this.pinnedTags = concat(this.pinnedTags, tagName)
-    }
-  }
-
-  sortedTagFields = $derived.by(() => {
-    if (this.sortBy === 'relevance') {
-      return sortTagFieldsByRelevance(this.tagFields, this.pinnedTags, this.sortAscending)
-    }
-    return this.tagFields
-  })
 
   isTagSupported(tagName: string): boolean {
-    return this.supportedTagsList.includes(tagName)
+    return this.supportedTagNames.includes(tagName)
   }
 
-  removeTag(index: number) {
-    console.log('removing tag at index', index)
-    this.tagFields.splice(index, 1)
-  }
-
-  renameTag(index: number, newName: string) {
-    const trimmedName = newName.trim()
-    if (!trimmedName) {
-      return
+  removeTag(tagField: TagField) {
+    if (tagField.status === TagStatus.ADDED) {
+      this.addedTagStore.removeAddedTag(tagField)
+    } else {
+      tagField.status = TagStatus.REMOVED
     }
+  }
 
-    const oldName = this.tagFields[index].tagName
-    if (oldName === trimmedName) {
-      return
+  readdTag(tagField: TagField) {
+    if (tagField.status === TagStatus.REMOVED) {
+      tagField.status = TagStatus.UNCHANGED
     }
+  }
 
-    if (this.tagFields.some((f, i) => i !== index && f.tagName.toLowerCase() === trimmedName.toLowerCase())) {
-      return
+  updateTagValue(tagField: TagField, newValue: string) {
+    if (tagField.originalValue === newValue) {
+      tagField.status = TagStatus.UNCHANGED
+    } else {
+      tagField.status = TagStatus.EDITED
     }
-
-    this.tagFields[index].tagName = trimmedName
+    tagField.tagValue = newValue
   }
 
-  addTagBelow(index: number) {
-    this.tagFields.splice(index + 1, 0, { id: crypto.randomUUID(), tagName: '', tagValue: '' })
-  }
-
-  updateTagValue(index: number, value: string) {
-    this.tagFields[index].tagValue = value
-  }
-
-  resetTags() {
-    const tags = this.playerStore.currentSong?.tags
+  setTags(tags: Map<string, string> | undefined) {
+    this.addedTagStore.resetTags()
     if (!tags) {
       this.tagFields = []
       return
     }
 
-    if (this.supportedTagsList.length === 0) {
+    if (this.supportedTagNames.length === 0)
       return
-    }
 
-    const supportedFields: TagField[] = []
-    const otherFields: TagField[] = []
+    const tagFields = []
 
     for (const [tagName, value] of tags.entries()) {
-      const field = {
-        id: crypto.randomUUID(),
-        tagName,
-        tagValue: value || ''
-      }
-      if (this.isTagSupported(tagName)) {
-        supportedFields.push(field)
-      } else {
-        otherFields.push(field)
-      }
+      tagFields.push(new TagField(tagName, value))
     }
-
-    this.tagFields = [...supportedFields, ...otherFields]
+    this.tagFields = tagFields
   }
 
-  async applyTags() {
-    const song = this.playerStore.currentSong
+
+
+
+  async applyTags(song: Song | null) {
     if (!song) return
 
     this.isSaving = true
     this.saveMessage = ''
 
     try {
-      const tagsMap = new SvelteMap<string, string>(
-        this.tagFields
+      const newTags = new SvelteMap<string, string>(
+        this.sortedTagFields
+          .filter((field) => field.status === TagStatus.REMOVED)
+          // filter blank tags. TODO: replace with validation
           .filter((field) => field.tagName.trim())
           .map((field) => [field.tagName, field.tagValue])
       )
 
+      song.tags = newTags
+
       await invoke('write_tags', {
         path: song.path,
-        tags: tagsMap
+        tags: newTags
       })
-
-      if (this.playerStore.currentSong) {
-        this.playerStore.currentSong.tags = tagsMap
-      }
 
       this.saveMessage = '✓ Tags saved successfully'
       setTimeout(() => {
@@ -186,11 +227,11 @@ class TagEditorStore {
   }
 }
 
-let tagEditorStore: TagEditorStore | undefined = undefined;
+let tagEditorStore: TagEditorStore | undefined = undefined
 
 export function useTagEditorStore() {
   if (tagEditorStore === undefined) {
-    tagEditorStore = new TagEditorStore(usePlayerStore)
+    tagEditorStore = new TagEditorStore()
   }
   return tagEditorStore
 }
