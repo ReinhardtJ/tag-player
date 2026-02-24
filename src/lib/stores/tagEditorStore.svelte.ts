@@ -4,8 +4,7 @@ import { type AddedTagStore, useAddedTagStore } from './addedTagStore.svelte.ts'
 import { type PinnedTagStore, usePinnedTagStore } from './pinnedTagStore.svelte.ts'
 import type { Song } from './playerTypes.ts'
 import type { SortOrder } from '$lib/components/SortByToolbar.types.ts'
-import { countBy, filter, find, findIndex, intersectionBy, keys, pickBy } from 'lodash'
-
+import { find } from 'lodash'
 
 export enum TagStatus {
   UNCHANGED,
@@ -22,15 +21,49 @@ export class TagField {
   readonly originalName: string
   readonly originalValue: string
 
-  constructor(tagName: string, tagValue: string) {
+  constructor(tagName: string, tagValue: string, status: TagStatus = TagStatus.UNCHANGED) {
     this.id = crypto.randomUUID()
 
-    this.status = $state(TagStatus.UNCHANGED)
+    this.status = $state(status)
     this.tagName = $state(tagName)
     this.tagValue = $state(tagValue)
 
     this.originalName = tagName
     this.originalValue = tagValue
+  }
+
+  updateName(newName: string) {
+    if (newName === this.originalName) {
+      this.updateStatus(TagStatus.UNCHANGED)
+    } else {
+      this.updateStatus(TagStatus.EDITED)
+    }
+
+    newName = newName.trim()
+
+    this.tagName = newName
+  }
+
+  updateValue(newValue: string) {
+    if (this.originalValue === newValue) {
+      this.updateStatus(TagStatus.UNCHANGED)
+    } else {
+      this.updateStatus(TagStatus.EDITED)
+    }
+    this.tagValue = newValue
+  }
+
+  reset() {
+    this.tagName = this.originalName
+    this.tagValue = this.originalValue
+    this.updateStatus(TagStatus.UNCHANGED)
+  }
+
+  updateStatus(newStatus: TagStatus) {
+    // we want to keep "added" tags as added
+    if (this.status !== TagStatus.ADDED) {
+      this.status = newStatus
+    }
   }
 }
 
@@ -38,13 +71,11 @@ export function matchesTagName(value: string, tagField: TagField) {
   return value.trim().toLowerCase() === tagField.tagName.trim().toLowerCase()
 }
 
-
 export function sortTagFieldsByRelevance(
   tagFields: TagField[],
   isRelevantCallbacks: ((tf: TagField) => boolean)[],
   sortOrder: SortOrder
 ): TagField[] {
-
   const relevantTagFields = []
   const otherTagFields = new SvelteSet(tagFields)
 
@@ -94,18 +125,10 @@ export class TagEditorStore {
         )
       ]
 
-      return sortTagFieldsByRelevance(
-        this.tagFields,
-        isRelevantCallbacks,
-        this.sortOrder,
-      )
+      return sortTagFieldsByRelevance(this.tagFields, isRelevantCallbacks, this.sortOrder)
     }
 
-    return sortTagFieldsByRelevance(
-      this.tagFields,
-      isRelevantCallbacks,
-      this.sortOrder
-    )
+    return sortTagFieldsByRelevance(this.tagFields, isRelevantCallbacks, this.sortOrder)
   })
 
   constructor() {
@@ -115,35 +138,6 @@ export class TagEditorStore {
       })
     })
   }
-
-  renameTag(tagField: TagField, newName: string): string {
-    if (newName === tagField.originalName) {
-      tagField.status = TagStatus.UNCHANGED
-      return ''
-    }
-
-    if (newName === tagField.tagName)
-      return ''
-
-    tagField.status = TagStatus.EDITED
-    newName = newName.trim()
-
-
-
-    const tagAlreadyExists = this.sortedTagFields.some(
-      (f) => f.id !== tagField.id && f.tagName.toLowerCase() === newName.toLowerCase()
-    )
-
-    if (tagAlreadyExists)
-      return 'Tag Name already Exists'
-
-
-    tagField.tagName = newName
-    if (!newName)
-      return 'Please Enter a Name'
-    return ''
-  }
-
 
   isTagSupported(tagName: string): boolean {
     return this.supportedTagNames.includes(tagName)
@@ -163,15 +157,6 @@ export class TagEditorStore {
     }
   }
 
-  updateTagValue(tagField: TagField, newValue: string) {
-    if (tagField.originalValue === newValue) {
-      tagField.status = TagStatus.UNCHANGED
-    } else {
-      tagField.status = TagStatus.EDITED
-    }
-    tagField.tagValue = newValue
-  }
-
   setTags(tags: Map<string, string> | undefined) {
     this.addedTagStore.resetTags()
     if (!tags) {
@@ -179,8 +164,7 @@ export class TagEditorStore {
       return
     }
 
-    if (this.supportedTagNames.length === 0)
-      return
+    if (this.supportedTagNames.length === 0) return
 
     const tagFields = []
 
@@ -189,9 +173,6 @@ export class TagEditorStore {
     }
     this.tagFields = tagFields
   }
-
-
-
 
   async applyTags(song: Song | null) {
     if (!song) return

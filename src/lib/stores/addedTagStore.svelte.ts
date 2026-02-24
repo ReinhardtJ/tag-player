@@ -1,5 +1,5 @@
 import { without } from 'lodash'
-import { TagField } from '$lib/stores/tagEditorStore.svelte.ts'
+import { TagField, TagStatus } from '$lib/stores/tagEditorStore.svelte.ts'
 
 export class AddedTagStore {
   addedTagFields = $state<TagField[]>([])
@@ -13,7 +13,7 @@ export class AddedTagStore {
   }
 
   addTag() {
-    this.addedTagFields.push(new TagField('', ''))
+    this.addedTagFields.push(new TagField('', '', TagStatus.ADDED))
   }
 }
 
