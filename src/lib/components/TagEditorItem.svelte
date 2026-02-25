@@ -1,12 +1,12 @@
 <div class="grid grid-cols-[auto_1fr_2fr_auto_auto] gap-2">
   <!-- Status Dot  -->
   <div
-    class="w-2 h-2 rounded-full self-center {tagField.status === TagStatus.EDITED
-      ? 'bg-violet-600 shadow-[0_0_6px_2px_--theme(--color-violet-500/0.3)]'
+    class="w-1.5 h-1.5 rounded-full self-center {tagField.status === TagStatus.EDITED
+      ? 'bg-violet-500 shadow-[0_0_10px_1px_--theme(--color-violet-500)]'
       : tagField.status === TagStatus.REMOVED
-        ? 'bg-red-600 shadow-[0_0_6px_2px_--theme(--color-red-500/0.3)]'
+        ? 'bg-red-500 shadow-[0_0_10px_1px_--theme(--color-red-500)]'
         : tagField.status === TagStatus.ADDED
-          ? 'bg-green-600 shadow-[0_0_6px_2px_--theme(--color-green-500/0.3)]'
+          ? 'bg-green-500 shadow-[0_0_10px_1px_--theme(--color-green-500)]'
           : ''}"
   ></div>
   <!-- Tag Name Input -->

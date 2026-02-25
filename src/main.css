@@ -160,10 +160,8 @@ html {
 @utility btn-primary {
   @apply bg-linear-to-br from-purple-700 to-violet-700 rounded-lg
     hover:from-purple-600 hover:to-violet-600 hover:cursor-pointer
-    neo-raised;
+    neo-raised px-3 py-1.5;
 
-  /* Standard-Padding für Buttons mit Text */
-  padding: 0.375rem 1.25rem;
 
   &:has(> svg:only-child) {
     @apply p-1.5 aspect-square;
@@ -173,5 +171,9 @@ html {
 @utility btn-secondary {
   @apply rounded-lg p-1.5 neo-raised
     bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600
-     hover:cursor-pointer;
+     hover:cursor-pointer px-3 py-1.5;
+
+  &:has(> svg:only-child) {
+    @apply p-1.5 aspect-square;
+  }
 }

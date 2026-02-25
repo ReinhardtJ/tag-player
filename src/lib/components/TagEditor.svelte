@@ -18,27 +18,21 @@
           <!-- Reset Button  -->
           <button
             onclick={() => tagEditorStore.setTags(playerStore.currentSong?.tags)}
-            class="neo-raised-sm p-2 rounded-lg bg-gray-300 dark:bg-neutral-700 hover:dark:bg-neutral-600"
+            class="btn-secondary"
           >
             <RotateCcw size={16} />
           </button>
           <!-- Save Button  -->
           <button
-            onclick={() => tagEditorStore.applyTags(playerStore.currentSong)}
+            onclick={() => tagEditorStore.saveTags(playerStore.currentSong)}
             disabled={tagEditorStore.isSaving}
-            class="neo-raised-sm p-2 rounded-lg transition-all
-                 bg-linear-to-r from-purple-700 to-violet-700 hover:from-purple-600 hover:to-violet-600
-                 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary"
           >
             <Save size={16} />
           </button>
         </div>
       </div>
       <div class="p-2">
-        {#each addedTagStore.addedTagFields as tagField (tagField.id)}
-          <TagEditorItem {tagField} />
-        {/each}
-
         {#each tagEditorStore.sortedTagFields as tagField (tagField.id)}
           <TagEditorItem {tagField} />
         {/each}

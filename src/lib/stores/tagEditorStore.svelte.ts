@@ -110,25 +110,35 @@ export class TagEditorStore {
   private addedTagStore: AddedTagStore = useAddedTagStore()
   private pinnedTagStore: PinnedTagStore = usePinnedTagStore()
 
+  private get allTagFields () {
+    return [...this.addedTagStore.addedTagFields, ...this.tagFields]
+  }
+
   sortedTagFields = $derived.by(() => {
-    // pinned tags are always displayed first
-    let isRelevantCallbacks = this.pinnedTagStore.pinnedTagNames.map(
+    if (this.sortBy !== 'relevance')
+      return this.allTagFields
+
+    // relevance order: Added > Pinned > Supported > Custom
+
+    // store callbacks for determining if a tag field is relevant
+    const areRelevant: ((tf: TagField) => boolean)[] = []
+
+    // added tag?
+    areRelevant.push((tf: TagField) => tf.status === TagStatus.ADDED)
+
+    // pinned tag?
+    areRelevant.push(...this.pinnedTagStore.pinnedTagNames.map(
       (pinnedTagName) => (tf: TagField) => matchesTagName(pinnedTagName, tf)
+    ))
+
+    // supported tag?
+    areRelevant.push(...this.supportedTagNames.map(
+      (supportedTagName) => (tf: TagField) => matchesTagName(supportedTagName, tf)
+    ))
+
+    return sortTagFieldsByRelevance(
+      this.allTagFields, areRelevant, this.sortOrder
     )
-
-    if (this.sortBy === 'relevance') {
-      // we display supported tags before unsupported tags
-      isRelevantCallbacks = [
-        ...isRelevantCallbacks,
-        ...this.supportedTagNames.map(
-          (supportedTagName) => (tf: TagField) => matchesTagName(supportedTagName, tf)
-        )
-      ]
-
-      return sortTagFieldsByRelevance(this.tagFields, isRelevantCallbacks, this.sortOrder)
-    }
-
-    return sortTagFieldsByRelevance(this.tagFields, isRelevantCallbacks, this.sortOrder)
   })
 
   constructor() {
@@ -164,8 +174,6 @@ export class TagEditorStore {
       return
     }
 
-    if (this.supportedTagNames.length === 0) return
-
     const tagFields = []
 
     for (const [tagName, value] of tags.entries()) {
@@ -174,7 +182,7 @@ export class TagEditorStore {
     this.tagFields = tagFields
   }
 
-  async applyTags(song: Song | null) {
+  async saveTags(song: Song | null) {
     if (!song) return
 
     this.isSaving = true
@@ -183,20 +191,20 @@ export class TagEditorStore {
     try {
       const newTags = new SvelteMap<string, string>(
         this.sortedTagFields
-          .filter((field) => field.status === TagStatus.REMOVED)
+          .filter((field) => field.status !== TagStatus.REMOVED)
           // filter blank tags. TODO: replace with validation
-          .filter((field) => field.tagName.trim())
+          .filter((field) => field.tagName.trim() !== '')
           .map((field) => [field.tagName, field.tagValue])
       )
 
-      song.tags = newTags
 
       await invoke('write_tags', {
         path: song.path,
         tags: newTags
       })
-
-      this.saveMessage = '✓ Tags saved successfully'
+      song.tags = newTags
+      this.setTags(newTags)
+      this.saveMessage = `${newTags.size} ✓ Tags saved successfully`
       setTimeout(() => {
         this.saveMessage = ''
       }, 3000)
