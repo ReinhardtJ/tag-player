@@ -10,6 +10,12 @@ export default ts.config(
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
   {
+    rules: {
+      semi: "off",
+      semi: ["error", "never"],
+    },
+  },
+  {
     languageOptions: {
       globals: {
         ...globals.browser,

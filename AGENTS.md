@@ -54,6 +54,9 @@ npm run preview          # Preview production build (frontend only)
 
 ## Code Style Guidelines
 
+### General
+- Always apply the "Clean Code" step-down rule where possible: if a function calls another function, it should read from top to bottom
+
 ### TypeScript/JavaScript
 
 **Formatting**: Prettier with `.prettierrc` configuration:

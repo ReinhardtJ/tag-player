@@ -1,7 +1,7 @@
+use crate::tags::reading_tags;
 use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
-use crate::tags::reading_tags;
 
 #[derive(serde::Serialize)]
 pub struct Song {
@@ -9,6 +9,7 @@ pub struct Song {
     pub name: String,
     pub duration_millis: u32,
     pub tags: HashMap<String, String>,
+    pub cover_base64: Option<String>,
 }
 
 #[derive(serde::Serialize)]
@@ -16,7 +17,6 @@ pub struct Library {
     pub songs: Vec<Song>,
     pub errors: Vec<String>,
 }
-
 
 pub fn read_music_library(library_dir: &Path) -> Library {
     let mut songs = Vec::new();
@@ -56,6 +56,7 @@ pub fn read_music_library(library_dir: &Path) -> Library {
                 name,
                 duration_millis: properties.duration_millis,
                 tags: properties.tags,
+                cover_base64: properties.cover_base64,
             }),
             Err(e) => errors.push(format!("{}, {:?}", path, e)),
         }

@@ -14,6 +14,7 @@ export interface Song {
   name: string
   duration_millis: number
   tags: Map<string, string>
+  cover_base64: string | null
 }
 
 export interface Library {
@@ -26,6 +27,7 @@ export interface SongDto {
   name: string
   duration_millis: number
   tags: Record<string, string>
+  cover_base64: string | null
 }
 
 export interface LibraryDto {

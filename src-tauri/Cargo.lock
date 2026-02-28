@@ -3836,6 +3836,7 @@ name = "tag-player"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "cpal",
  "lofty",
  "ringbuf",
