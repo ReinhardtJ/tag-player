@@ -1,9 +1,6 @@
 <div class="shrink-0 flex items-center gap-2">
   <span>Sort by</span>
-  <select
-    bind:value={sortBy}
-    class="btn-primary h-8 focus:outline-none"
-  >
+  <select bind:value={sortBy} class="btn-primary h-8 focus:outline-none">
     {#each sortOptions as option (option)}
       <option value={option}>{toLabel(option)}</option>
     {/each}
@@ -30,9 +27,9 @@
   }
 
   function toggleSortOrder() {
-    if (sortOrder === 'asc')
+    if (sortOrder === 'asc') 
       sortOrder = 'desc'
-    else
+    else 
       sortOrder = 'asc'
   }
 

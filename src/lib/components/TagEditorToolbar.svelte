@@ -46,13 +46,13 @@
 
   function searchOnWeb() {
     const song = playerStore.currentSong
-    if (!song)
+    if (!song) 
       return
 
     const searchTags = [
       song.tags.get('TrackTitle') ?? '',
       song.tags.get('TrackArtist') ?? '',
-      song.tags.get('AlbumTitle') ?? '',
+      song.tags.get('AlbumTitle') ?? ''
     ]
 
     let searchQuery = some(searchTags)

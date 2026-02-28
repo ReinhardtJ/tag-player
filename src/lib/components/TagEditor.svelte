@@ -2,7 +2,7 @@
   {#if tags !== undefined}
     <!-- Tag List -->
     <div class="flex-1 overflow-auto neo-scrollbar">
-      <div class="sticky top-2 m-2 ">
+      <div class="sticky top-2 m-2">
         <TagEditorToolbar />
       </div>
       <div class="p-2">

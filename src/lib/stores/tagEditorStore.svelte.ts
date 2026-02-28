@@ -110,12 +110,12 @@ export class TagEditorStore {
   private addedTagStore: AddedTagStore = useAddedTagStore()
   private pinnedTagStore: PinnedTagStore = usePinnedTagStore()
 
-  private get allTagFields () {
+  private get allTagFields() {
     return [...this.addedTagStore.addedTagFields, ...this.tagFields]
   }
 
   sortedTagFields = $derived.by(() => {
-    if (this.sortBy !== 'relevance')
+    if (this.sortBy !== 'relevance') 
       return this.allTagFields
 
     // relevance order: Added > Pinned > Supported > Custom
@@ -183,7 +183,8 @@ export class TagEditorStore {
   }
 
   async saveTags(song: Song | null) {
-    if (!song) return
+    if (!song) 
+      return
 
     this.isSaving = true
     this.saveMessage = ''
@@ -196,7 +197,6 @@ export class TagEditorStore {
           .filter((field) => field.tagName.trim() !== '')
           .map((field) => [field.tagName, field.tagValue])
       )
-
 
       await invoke('write_tags', {
         path: song.path,

@@ -162,7 +162,6 @@ html {
     hover:from-purple-600 hover:to-violet-600 hover:cursor-pointer
     neo-raised px-3 py-1.5;
 
-
   &:has(> svg:only-child) {
     @apply p-1.5 aspect-square;
   }

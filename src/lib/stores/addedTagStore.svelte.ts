@@ -17,7 +17,6 @@ export class AddedTagStore {
   }
 }
 
-
 let addedTagStore: AddedTagStore | undefined = undefined
 
 export function useAddedTagStore() {

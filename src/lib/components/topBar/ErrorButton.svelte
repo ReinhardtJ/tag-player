@@ -1,5 +1,5 @@
 {#if errorStore.errors.length > 0}
-  <a href={resolve("/error")} class="btn-secondary">Errors ({errorStore.errors.length})</a>
+  <a href={resolve('/error')} class="btn-secondary">Errors ({errorStore.errors.length})</a>
 {/if}
 
 <script lang="ts">

@@ -104,7 +104,8 @@
     const tagAlreadyExists = tagEditorStore.sortedTagFields.some(
       (f) => f.id !== tagField.id && f.tagName.toLowerCase() === newName.toLowerCase()
     )
-    if (!tagAlreadyExists) tagField.updateName(newName)
+    if (!tagAlreadyExists) 
+      tagField.updateName(newName)
   }
 
   const suggestedTags = $derived.by(() => {

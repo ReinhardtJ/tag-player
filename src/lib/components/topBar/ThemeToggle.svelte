@@ -1,7 +1,4 @@
-<button
-  onclick={toggleDarkMode}
-  class="btn-secondary"
->
+<button onclick={toggleDarkMode} class="btn-secondary">
   {#if isDarkMode}
     <Sun size={20} />
   {:else}

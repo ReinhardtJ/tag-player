@@ -5,8 +5,8 @@ function createTagField(tagName: string): TagField {
   return new TagField(tagName, `some value for tag ${tagName}`)
 }
 
-function buildRelevanceCallbackFromTagNames(tagNames: string[]){
-  return tagNames.map(tagName => (tf: TagField) => matchesTagName(tagName, tf))
+function buildRelevanceCallbackFromTagNames(tagNames: string[]) {
+  return tagNames.map((tagName) => (tf: TagField) => matchesTagName(tagName, tf))
 }
 
 describe('sortTagFieldsByRelevance', () => {
@@ -28,7 +28,7 @@ describe('sortTagFieldsByRelevance', () => {
 
     expect(result.map((f) => f.tagName).slice(0, 4)).toEqual(['Prio1', 'Prio2', 'Prio3', 'Prio4'])
   })
-  
+
   it('ascending: sorts tag fields by relevance groups', () => {
     const fields: TagField[] = [
       createTagField('Prio2'),
@@ -44,7 +44,6 @@ describe('sortTagFieldsByRelevance', () => {
       buildRelevanceCallbackFromTagNames(['Prio1', 'Prio2', 'Prio3', 'Prio4']),
       'asc'
     )
-
 
     expect(result.map((f) => f.tagName).slice(2)).toEqual(['Prio4', 'Prio3', 'Prio2', 'Prio1'])
   })

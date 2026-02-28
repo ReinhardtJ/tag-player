@@ -1,4 +1,4 @@
-import { concat, without } from "lodash"
+import { concat, without } from 'lodash'
 
 export class PinnedTagStore {
   private _pinnedTagNames = $state([
@@ -14,7 +14,7 @@ export class PinnedTagStore {
   get pinnedTagNames() {
     return this._pinnedTagNames
   }
-  
+
   isPinnedTag(tagName: string): boolean {
     return this._pinnedTagNames.some((tag) => tag.toLowerCase() === tagName.toLowerCase())
   }

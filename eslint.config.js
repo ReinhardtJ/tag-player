@@ -1,9 +1,9 @@
 // eslint.config.js
-import js from '@eslint/js';
-import svelte from 'eslint-plugin-svelte';
-import globals from 'globals';
-import ts from 'typescript-eslint';
-import svelteConfig from './svelte.config.js';
+import js from "@eslint/js";
+import svelte from "eslint-plugin-svelte";
+import globals from "globals";
+import ts from "typescript-eslint";
+import svelteConfig from "./svelte.config.js";
 
 export default ts.config(
   js.configs.recommended,
@@ -13,17 +13,17 @@ export default ts.config(
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node
-      }
-    }
+        ...globals.node,
+      },
+    },
   },
   {
-    files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+    files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
     // See more details at: https://typescript-eslint.io/packages/parser/
     languageOptions: {
       parserOptions: {
         projectService: true,
-        extraFileExtensions: ['.svelte'], // Add support for additional file extensions, such as .svelte
+        extraFileExtensions: [".svelte"], // Add support for additional file extensions, such as .svelte
         parser: ts.parser,
         // Specify a parser for each language, if needed:
         // parser: {
@@ -39,14 +39,15 @@ export default ts.config(
         //
         // If non-serializable properties are included, running ESLint with the --cache flag will fail.
         // In that case, please remove the non-serializable properties. (e.g. `svelteConfig: { ...svelteConfig, kit: { ...svelteConfig.kit, typescript: undefined }}`)
-        svelteConfig
-      }
-    }
+        svelteConfig,
+      },
+    },
   },
   {
     rules: {
-      // Override or add rule settings here, such as:
-      // 'svelte/rule-name': 'error'
-    }
-  }
+      "nonblock-statement-body-position": ["error", "below", {}],
+      indent: ["error", 2],
+      "multiline-ternary": ["error", "always-multiline"],
+    },
+  },
 );
