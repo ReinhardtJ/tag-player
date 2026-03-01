@@ -5,7 +5,7 @@ mod tags;
 mod decoder;
 mod audio;
 pub mod musicbrainz;
-
+mod musicbrainz_tag_mapping;
 
 use crate::player::shared::AudioPlayerCommand;
 use crate::player::threads::player_thread::player_thread;
