@@ -1,14 +1,3 @@
-export interface Tags {
-  title: string | null
-  artist: string | null
-  album_artist: string | null
-  album: string | null
-  date: string | null
-  genre: string | null
-  mood: string | null
-  track_number: number | null
-}
-
 export interface Song {
   path: string
   name: string
