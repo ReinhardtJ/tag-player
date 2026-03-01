@@ -4,6 +4,7 @@ pub mod read_music_library;
 mod tags;
 mod decoder;
 mod audio;
+pub mod musicbrainz;
 
 
 use crate::player::shared::AudioPlayerCommand;
