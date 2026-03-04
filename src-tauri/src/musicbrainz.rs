@@ -1,10 +1,10 @@
 use crate::read_music_library::Song;
 use reqwest::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 pub use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Recording {
     pub id: String,
     pub title: String,
@@ -22,7 +22,7 @@ pub struct Recording {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArtistCredit {
     pub name: String,
     pub artist: Artist,
@@ -31,7 +31,7 @@ pub struct ArtistCredit {
     pub extra: HashMap<String, serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Artist {
     pub id: String,
     pub name: String,
@@ -40,7 +40,7 @@ pub struct Artist {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Release {
     pub id: String,
     pub title: String,
@@ -62,7 +62,7 @@ pub struct Release {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReleaseGroup {
     pub id: String,
     pub first_release_date: Option<String>,
@@ -70,7 +70,7 @@ pub struct ReleaseGroup {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReleaseEvent {
     pub date: Option<String>,
     pub country: Option<String>,
@@ -78,7 +78,7 @@ pub struct ReleaseEvent {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Label {
     pub name: Option<String>,
     pub catalog_number: Option<String>,
@@ -87,7 +87,7 @@ pub struct Label {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReleaseMedia {
     pub track_count: Option<u32>,
     pub position: Option<u32>,
@@ -98,7 +98,7 @@ pub struct ReleaseMedia {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Track {
     pub id: Option<String>,
     pub number: Option<String>,
@@ -111,7 +111,7 @@ pub struct Track {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tag {
     pub name: String,
     pub count: i32,
@@ -119,7 +119,7 @@ pub struct Tag {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Genre {
     pub name: String,
     pub count: i32,

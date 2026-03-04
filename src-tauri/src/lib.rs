@@ -7,9 +7,10 @@ mod audio;
 pub mod musicbrainz;
 mod musicbrainz_tag_mapping;
 
+use crate::musicbrainz::search_song_on_musicbrainz;
 use crate::player::shared::AudioPlayerCommand;
 use crate::player::threads::player_thread::player_thread;
-use crate::read_music_library::{read_music_library, Library};
+use crate::read_music_library::{read_music_library, Library, Song};
 use crate::tags::writing_tags::{write_tags_to_file, get_supported_tags as get_supported_tags_list};
 use std::collections::HashMap;
 use std::path::Path;
@@ -74,6 +75,11 @@ fn get_supported_tags() -> Vec<String> {
     get_supported_tags_list()
 }
 
+#[tauri::command]
+async fn search_musicbrainz(song: Song) -> Result<Vec<crate::musicbrainz::Recording>, String> {
+    search_song_on_musicbrainz(&song).await
+}
+
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -98,7 +104,8 @@ pub fn run() {
             volume_change,
             seek,
             write_tags,
-            get_supported_tags
+            get_supported_tags,
+            search_musicbrainz
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

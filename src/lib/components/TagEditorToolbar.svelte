@@ -16,9 +16,13 @@
     >
       <RotateCcw size={16} />
     </button>
-    <!-- Search Button  -->
+    <!-- Search Web Button  -->
     <button onclick={searchOnWeb} class="btn-secondary">
       <Globe size={16} />
+    </button>
+    <!-- Search MusicBrainz Button  -->
+    <button onclick={searchMusicBrainz} class="btn-secondary">
+      <Brain size={16} />
     </button>
     <!-- Save Button  -->
     <button
@@ -32,8 +36,9 @@
 </div>
 
 <script lang="ts">
+  import { invoke } from '@tauri-apps/api/core'
   import { openUrl } from '@tauri-apps/plugin-opener'
-  import { Plus, RotateCcw, Save, Globe } from '@lucide/svelte'
+  import { Plus, RotateCcw, Save, Globe, Brain } from '@lucide/svelte'
   import SortByToolbar from './SortByToolbar.svelte'
   import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
@@ -61,5 +66,18 @@
 
     const url = `https://kagi.com/search?q=${encodeURIComponent(searchQuery + ' MusicBrainz')}`
     openUrl(url)
+  }
+
+  async function searchMusicBrainz() {
+    const song = playerStore.currentSong
+    if (!song) 
+      return
+
+    try {
+      const result = await invoke('search_musicbrainz', { song })
+      console.log('MusicBrainz search result:', result)
+    } catch (error) {
+      console.error('MusicBrainz search failed:', error)
+    }
   }
 </script>

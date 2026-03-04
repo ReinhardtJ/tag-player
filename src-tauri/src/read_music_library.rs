@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Song {
     pub path: String,
     pub name: String,
