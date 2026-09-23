@@ -43,15 +43,17 @@
   import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
   import { useAddedTagStore } from '$lib/stores/addedTagStore.svelte.ts'
+  import { useDialogStore } from '$lib/stores/dialogStore.svelte'
   import { some } from 'lodash'
 
   const playerStore = usePlayerStore()
   const tagEditorStore = useTagEditorStore()
   const addedTagStore = useAddedTagStore()
+  const dialogStore = useDialogStore()
 
   function searchOnWeb() {
     const song = playerStore.currentSong
-    if (!song) 
+    if (!song)
       return
 
     const searchTags = [
@@ -69,8 +71,9 @@
   }
 
   async function searchMusicBrainz() {
+    dialogStore.show()
     const song = playerStore.currentSong
-    if (!song) 
+    if (!song)
       return
 
     try {

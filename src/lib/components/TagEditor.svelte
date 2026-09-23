@@ -15,8 +15,8 @@
     <div class="flex flex-col gap-2">
       {#if tagEditorStore.saveMessage}
         <div
-          class="text-center text-sm"
           class:text-green-600={tagEditorStore.saveMessage.startsWith('✓')}
+          class="text-center text-sm"
           class:text-red-600={tagEditorStore.saveMessage.startsWith('Error')}
         >
           {tagEditorStore.saveMessage}
@@ -26,9 +26,12 @@
   {/if}
 </div>
 
+<Dialog />
+
 <script lang="ts">
   import TagEditorItem from './TagEditorItem.svelte'
   import TagEditorToolbar from './TagEditorToolbar.svelte'
+  import Dialog from './generic/Dialog.svelte'
   import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
 

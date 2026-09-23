@@ -1,7 +1,4 @@
-use crate::musicbrainz::{
-    Artist, ArtistCredit, Genre, Label, Recording, Release, ReleaseEvent, ReleaseGroup,
-    ReleaseMedia, Track,
-};
+use crate::musicbrainz::Recording;
 use std::collections::HashMap;
 
 /// Maps a MusicBrainz recording to a HashMap of tags in lofty format.
@@ -328,6 +325,10 @@ pub fn recording_to_tags(recording: &Recording) -> HashMap<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::musicbrainz::{
+        Artist, ArtistCredit, Genre, Label, Release, ReleaseEvent, ReleaseGroup, ReleaseMedia,
+        Track,
+    };
 
     #[test]
     fn test_recording_to_tags_basic() {
