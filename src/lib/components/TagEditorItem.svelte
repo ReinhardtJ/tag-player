@@ -98,6 +98,13 @@
   let value = $state(tagField.tagValue)
   let name = $state(tagField.tagName)
 
+  // Keep the inputs in sync when the field is changed externally
+  // (e.g. tags applied from MusicBrainz).
+  $effect(() => {
+    value = tagField.tagValue
+    name = tagField.tagName
+  })
+
   const isTagSupported = $derived(tagEditorStore.isTagSupported(tagField.tagName))
 
   function renameTag(tagField: TagField, newName: string) {

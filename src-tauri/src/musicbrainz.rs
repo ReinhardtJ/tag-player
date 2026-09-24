@@ -16,7 +16,7 @@ pub struct Recording {
     pub genres: Option<Vec<Genre>>,
     #[serde(default)]
     pub disambiguation: Option<String>,
-    #[serde(default)]
+    #[serde(default, rename = "first-release-date")]
     pub first_release_date: Option<String>,
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
@@ -35,6 +35,7 @@ pub struct ArtistCredit {
 pub struct Artist {
     pub id: String,
     pub name: String,
+    #[serde(rename = "sort-name")]
     pub sort_name: Option<String>,
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
@@ -49,6 +50,7 @@ pub struct Release {
     pub media: Option<Vec<ReleaseMedia>>,
     #[serde(rename = "artist-credit")]
     pub artist_credit: Option<Vec<ArtistCredit>>,
+    #[serde(rename = "release-group")]
     pub release_group: Option<ReleaseGroup>,
     pub events: Option<Vec<ReleaseEvent>>,
     pub labels: Option<Vec<Label>>,
@@ -65,6 +67,7 @@ pub struct Release {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReleaseGroup {
     pub id: String,
+    #[serde(rename = "first-release-date")]
     pub first_release_date: Option<String>,
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
@@ -89,8 +92,10 @@ pub struct Label {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReleaseMedia {
+    #[serde(rename = "track-count")]
     pub track_count: Option<u32>,
     pub position: Option<u32>,
+    #[serde(alias = "track")]
     pub tracks: Option<Vec<Track>>,
     pub format: Option<String>,
     pub format_id: Option<String>,

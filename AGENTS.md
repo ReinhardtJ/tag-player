@@ -176,7 +176,7 @@ npm run preview          # Preview production build (frontend only)
 5. **Error State**: Collect errors in `Library.errors` array
 6. **Dark Mode**: Managed via `dark` class on HTML element
 7. **File Extensions**: Case-insensitive matching for audio files
-
+8. **Rust Formatting**: Do NOT use `cargo fmt`. This codebase is not formatted with that tool, and it would result in countless unnecessary changes.
 ## Development Workflow
 
 1. **Frontend Changes**: Edit in `src/`, Vite HMR auto-reloads

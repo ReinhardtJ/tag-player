@@ -36,7 +36,6 @@
 </div>
 
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core'
   import { openUrl } from '@tauri-apps/plugin-opener'
   import { Plus, RotateCcw, Save, Globe, Brain } from '@lucide/svelte'
   import SortByToolbar from './SortByToolbar.svelte'
@@ -44,12 +43,14 @@
   import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
   import { useAddedTagStore } from '$lib/stores/addedTagStore.svelte.ts'
   import { useDialogStore } from '$lib/stores/dialogStore.svelte'
+  import { useMusicBrainzStore } from '$lib/stores/musicBrainzStore.svelte.ts'
   import { some } from 'lodash'
 
   const playerStore = usePlayerStore()
   const tagEditorStore = useTagEditorStore()
   const addedTagStore = useAddedTagStore()
   const dialogStore = useDialogStore()
+  const musicBrainzStore = useMusicBrainzStore()
 
   function searchOnWeb() {
     const song = playerStore.currentSong
@@ -71,16 +72,11 @@
   }
 
   async function searchMusicBrainz() {
-    dialogStore.show()
     const song = playerStore.currentSong
     if (!song)
       return
 
-    try {
-      const result = await invoke('search_musicbrainz', { song })
-      console.log('MusicBrainz search result:', result)
-    } catch (error) {
-      console.error('MusicBrainz search failed:', error)
-    }
+    dialogStore.show()
+    await musicBrainzStore.search(song)
   }
 </script>

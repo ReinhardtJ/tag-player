@@ -8,10 +8,13 @@ pub mod musicbrainz;
 mod musicbrainz_tag_mapping;
 
 use crate::musicbrainz::search_song_on_musicbrainz;
+use crate::musicbrainz_tag_mapping::recording_to_tags;
 use crate::player::shared::AudioPlayerCommand;
 use crate::player::threads::player_thread::player_thread;
 use crate::read_music_library::{read_music_library, Library, Song};
 use crate::tags::writing_tags::{write_tags_to_file, get_supported_tags as get_supported_tags_list};
+use crate::tags::covers::{write_cover_to_file};
+use crate::tags::reading_tags::extract_cover_data_url;
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{mpsc, Arc};
@@ -68,7 +71,20 @@ fn write_tags(path: String, tags: HashMap<String, String>) -> Result<(), String>
     Ok(())
 }
 
+#[tauri::command]
+fn write_cover(path: String, cover_path: Option<String>) -> Result<(), String> {
+    write_cover_to_file(
+        Path::new(&path),
+        cover_path.as_deref().map(Path::new)
+    ).map_err(|e| e.to_string())
+}
 
+/// Re-reads the embedded cover of an audio file so the frontend can refresh
+/// its preview and list thumbnail after a cover write.
+#[tauri::command]
+fn read_cover_data_url(path: String) -> Result<Option<String>, String> {
+    extract_cover_data_url(Path::new(&path)).map_err(|e| e.to_string())
+}
 
 #[tauri::command]
 fn get_supported_tags() -> Vec<String> {
@@ -80,7 +96,12 @@ async fn search_musicbrainz(song: Song) -> Result<Vec<crate::musicbrainz::Record
     search_song_on_musicbrainz(&song).await
 }
 
-
+#[tauri::command]
+fn musicbrainz_recording_to_tags(
+    recording: crate::musicbrainz::Recording,
+) -> HashMap<String, String> {
+    recording_to_tags(&recording)
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -104,8 +125,11 @@ pub fn run() {
             volume_change,
             seek,
             write_tags,
+            write_cover,
+            read_cover_data_url,
             get_supported_tags,
-            search_musicbrainz
+            search_musicbrainz,
+            musicbrainz_recording_to_tags
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

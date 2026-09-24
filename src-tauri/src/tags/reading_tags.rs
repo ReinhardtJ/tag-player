@@ -58,6 +58,19 @@ pub fn read_audio_file_properties(path: &Path) -> Result<AudioFileProperties> {
     })
 }
 
+/// Reads only the front cover (or first picture) of an audio file as a data URL.
+/// Used to refresh the UI after a cover has been written.
+pub fn extract_cover_data_url(path: &Path) -> Result<Option<String>> {
+    let parse_options = ParseOptions::new().parsing_mode(ParsingMode::Relaxed);
+
+    let tagged_file = Probe::open(path)?
+        .options(parse_options)
+        .read()
+        .with_context(|| format!("Failed to read audio file: {}", path.display()))?;
+
+    Ok(tagged_file.primary_tag().and_then(get_cover_as_base64))
+}
+
 fn get_cover_as_base64(tag: &Tag) -> Option<String> {
     tag
         .pictures()

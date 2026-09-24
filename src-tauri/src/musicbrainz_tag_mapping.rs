@@ -239,17 +239,17 @@ pub fn recording_to_tags(recording: &Recording) -> HashMap<String, String> {
                         tags.insert("Media".to_string(), format.clone());
                     }
 
+                    // Disc number (from the media position)
+                    if let Some(position) = first_media.position {
+                        tags.insert("DiscNumber".to_string(), position.to_string());
+                    }
+
                     // Track info for first media
                     if let Some(tracks) = &first_media.tracks {
                         if let Some(first_track) = tracks.first() {
                             // Track number
                             if let Some(number) = &first_track.number {
                                 tags.insert("TrackNumber".to_string(), number.clone());
-                            }
-
-                            // Disc number (position)
-                            if let Some(position) = first_track.position {
-                                tags.insert("DiscNumber".to_string(), position.to_string());
                             }
 
                             // MusicBrainz Track ID
@@ -267,19 +267,16 @@ pub fn recording_to_tags(recording: &Recording) -> HashMap<String, String> {
                                 }
                             }
                         }
-
-                        // Total tracks on this disc
-                        let track_count = tracks.len();
-                        if track_count > 0 {
-                            tags.insert("TrackTotal".to_string(), track_count.to_string());
-                        }
                     }
 
-                    // Track count from media (may differ from actual tracks)
+                    // Total tracks on this disc. The medium's reported
+                    // track-count is authoritative: search responses only
+                    // include the matching tracks, not the full track list.
                     if let Some(track_count) = first_media.track_count {
-                        // Only set if not already set from tracks
-                        if !tags.contains_key("TrackTotal") {
-                            tags.insert("TrackTotal".to_string(), track_count.to_string());
+                        tags.insert("TrackTotal".to_string(), track_count.to_string());
+                    } else if let Some(tracks) = &first_media.tracks {
+                        if !tracks.is_empty() {
+                            tags.insert("TrackTotal".to_string(), tracks.len().to_string());
                         }
                     }
                 }
@@ -422,7 +419,7 @@ mod tests {
         // Track info
         assert_eq!(tags.get("TrackNumber"), Some(&"1".to_string()));
         assert_eq!(tags.get("DiscNumber"), Some(&"1".to_string()));
-        assert_eq!(tags.get("TrackTotal"), Some(&"1".to_string()));
+        assert_eq!(tags.get("TrackTotal"), Some(&"12".to_string()));
         assert_eq!(tags.get("DiscTotal"), Some(&"1".to_string()));
 
         // MusicBrainz IDs
@@ -641,5 +638,65 @@ mod tests {
 
         // Total discs should be 2
         assert_eq!(tags.get("DiscTotal"), Some(&"2".to_string()));
+    }
+
+    // Guards the serde field names against the real (kebab-case) MusicBrainz
+    // JSON shape, which the hand-built fixtures above cannot catch.
+    #[test]
+    fn test_recording_to_tags_from_kebab_case_json() {
+        let json = r#"{
+            "id": "recording-id",
+            "title": "Song Title",
+            "artist-credit": [
+                {
+                    "name": "Artist",
+                    "joinphrase": "",
+                    "artist": { "id": "artist-id", "name": "Artist", "sort-name": "Artist, The" }
+                }
+            ],
+            "releases": [
+                {
+                    "id": "release-id",
+                    "title": "Album Title",
+                    "date": "1991-09-24",
+                    "status": "Official",
+                    "release-group": { "id": "release-group-id", "first-release-date": "1991" },
+                    "artist-credit": [
+                        {
+                            "name": "Album Artist",
+                            "artist": { "id": "album-artist-id", "name": "Album Artist", "sort-name": "Artist, Album" }
+                        }
+                    ],
+                    "media": [
+                        {
+                            "position": 2,
+                            "format": "CD",
+                            "track-count": 12,
+                            "track": [
+                                { "id": "track-id", "number": "6", "position": 6, "length": 200000 }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let recording: Recording = serde_json::from_str(json).unwrap();
+        let tags = recording_to_tags(&recording);
+
+        assert_eq!(tags.get("TrackTitle"), Some(&"Song Title".to_string()));
+        assert_eq!(tags.get("TrackArtist"), Some(&"Artist".to_string()));
+        assert_eq!(tags.get("TrackArtistSortOrder"), Some(&"Artist, The".to_string()));
+        assert_eq!(tags.get("AlbumArtistSortOrder"), Some(&"Artist, Album".to_string()));
+        assert_eq!(tags.get("MusicBrainzReleaseGroupId"), Some(&"release-group-id".to_string()));
+        assert_eq!(tags.get("OriginalReleaseDate"), Some(&"1991".to_string()));
+        assert_eq!(tags.get("OriginalYear"), Some(&"1991".to_string()));
+        assert_eq!(tags.get("ReleaseDate"), Some(&"1991-09-24".to_string()));
+        assert_eq!(tags.get("Year"), Some(&"1991".to_string()));
+        // Disc number comes from the medium position (2), not the track index (6).
+        assert_eq!(tags.get("DiscNumber"), Some(&"2".to_string()));
+        assert_eq!(tags.get("TrackNumber"), Some(&"6".to_string()));
+        assert_eq!(tags.get("TrackTotal"), Some(&"12".to_string()));
+        assert_eq!(tags.get("MusicBrainzTrackId"), Some(&"track-id".to_string()));
     }
 }

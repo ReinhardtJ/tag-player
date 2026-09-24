@@ -6,6 +6,9 @@
         <TagEditorToolbar />
       </div>
       <div class="p-2">
+        <div class="pb-1">
+          <CoverEditor></CoverEditor>
+        </div>
         {#each tagEditorStore.sortedTagFields as tagField (tagField.id)}
           <TagEditorItem {tagField} />
         {/each}
@@ -34,6 +37,7 @@
   import Dialog from './generic/Dialog.svelte'
   import { usePlayerStore } from '$lib/stores/playerStore.svelte'
   import { useTagEditorStore } from '$lib/stores/tagEditorStore.svelte'
+  import CoverEditor from '$lib/components/CoverEditor.svelte'
 
   const playerStore = usePlayerStore()
   const song = $derived(playerStore.currentSong)

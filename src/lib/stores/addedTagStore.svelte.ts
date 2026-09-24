@@ -12,8 +12,12 @@ export class AddedTagStore {
     this.addedTagFields = []
   }
 
-  addTag() {
-    this.addedTagFields.push(new TagField('', '', TagStatus.ADDED))
+  addTag(tagName = '', tagValue = '') {
+    this.addTagField(new TagField(tagName, tagValue, TagStatus.ADDED))
+  }
+
+  addTagField(tagField: TagField) {
+    this.addedTagFields.push(tagField)
   }
 }
 
