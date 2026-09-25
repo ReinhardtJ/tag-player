@@ -113,6 +113,32 @@ mod tests {
     }
 
     #[test]
+    fn test_probe_m4a_file() {
+        let path = "./tests/music_libraries/different_formats/some_song.m4a";
+        let result = probe_audio_file(path);
+
+        assert!(result.is_ok(), "Failed to probe M4A file");
+
+        let probed = result.unwrap();
+        assert!(
+            probed.format.default_track().is_some(),
+            "No default track found in M4A"
+        );
+
+        let track = probed.format.default_track().unwrap();
+        assert!(
+            track.codec_params.sample_rate.is_some(),
+            "No sample rate in M4A"
+        );
+
+        println!(
+            "M4A file probed successfully: {} Hz, {} channels",
+            track.codec_params.sample_rate.unwrap(),
+            track.codec_params.channels.map(|c| c.count()).unwrap_or(2)
+        );
+    }
+
+    #[test]
     fn test_probe_nonexistent_file() {
         let path = "./tests/music_libraries/nonexistent.mp3";
         let result = probe_audio_file(path);

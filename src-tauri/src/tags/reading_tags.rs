@@ -96,7 +96,7 @@ pub fn is_music_file(entry: &DirEntry) -> bool {
 
     let extension = get_file_extension(entry.path());
     extension
-        .map(|ext| matches!(ext.as_str(), "mp3" | "flac" | "wav"))
+        .map(|ext| matches!(ext.as_str(), "mp3" | "flac" | "wav" | "m4a"))
         .unwrap_or(false)
 }
 
@@ -132,5 +132,79 @@ mod tests {
             "Expected empty tags for WAV file"
         );
         assert!(properties.duration_millis > 0, "Expected non-zero duration");
+    }
+
+    #[test]
+    fn test_read_tags_from_m4a_file() {
+        // Reading tags from an M4A file should succeed and report a duration.
+        let result = read_audio_file_properties(Path::new(
+            "./tests/music_libraries/different_formats/some_song.m4a",
+        ));
+        assert!(result.is_ok());
+
+        let properties = result.unwrap();
+        assert!(properties.duration_millis > 0, "Expected non-zero duration");
+    }
+
+    #[test]
+    fn test_is_music_file_recognizes_m4a() {
+        // The m4a extension must pass the music-file allowlist so it enters the library.
+        let entry = walkdir::WalkDir::new("./tests/music_libraries/different_formats")
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .find(|e| e.file_name() == "some_song.m4a")
+            .expect("m4a fixture not found");
+
+        assert!(is_music_file(&entry));
+    }
+
+    #[test]
+    fn test_extract_cover_data_url_without_cover() {
+        // A file with no embedded picture should yield no data URL.
+        let result = extract_cover_data_url(Path::new(
+            "./tests/music_libraries/different_formats/some_song.wav",
+        ));
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), None);
+    }
+
+    #[test]
+    fn test_extract_cover_data_url_returns_written_cover() {
+        use lofty::file::TaggedFileExt;
+        use lofty::picture::MimeType;
+
+        // Copy a fixture so the checked-in file is never modified.
+        let temp_dir = tempfile::tempdir().unwrap();
+        let file_path = temp_dir.path().join("some_song.mp3");
+        std::fs::copy(
+            "./tests/music_libraries/one_file_with_tags/some_song.mp3",
+            &file_path,
+        )
+        .unwrap();
+
+        // Embed the static cover fixture directly through lofty.
+        let cover_bytes = std::fs::read("./tests/images/cover.png").unwrap();
+        let mut tagged_file = lofty::read_from_path(&file_path).unwrap();
+        tagged_file
+            .primary_tag_mut()
+            .unwrap()
+            .push_picture(lofty::picture::Picture::new_unchecked(
+                PictureType::CoverFront,
+                Some(MimeType::Png),
+                None,
+                cover_bytes.clone(),
+            ));
+        tagged_file
+            .save_to_path(&file_path, lofty::config::WriteOptions::default())
+            .unwrap();
+
+        // The extracted data URL should carry the exact embedded bytes.
+        let data_url = extract_cover_data_url(&file_path).unwrap().unwrap();
+        let prefix = "data:image/png;base64,";
+        assert!(data_url.starts_with(prefix), "unexpected data URL: {data_url}");
+
+        let decoded = STANDARD.decode(&data_url[prefix.len()..]).unwrap();
+        assert_eq!(decoded, cover_bytes);
     }
 }

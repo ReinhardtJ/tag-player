@@ -102,7 +102,7 @@ export class PlayerStore {
 
 function matchesSearch(song: Song, query: string): boolean {
   const searchTerm = query.toLowerCase().trim()
-  const searchableFields = song.tags.values().toArray()
+  const searchableFields = [song.name, ...song.tags.values().toArray()]
   return searchableFields.some((field) =>
     field?.toLowerCase().includes(searchTerm),
   )
